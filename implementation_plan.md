@@ -97,19 +97,20 @@ Transform raw Moodle LMS data into an executive-grade **Management Intelligence 
 - [x] [classes/external/get_report_data.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/external/get_report_data.php) - External API endpoint with context validation and scope enforcement.
 - [x] [cli/test_phase3.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/cli/test_phase3.php) - Phase 3 automated test suite covering flow calculations, tier stitching, early warning, and scheduled task.
 
-#### Phase 4: Dashboard UI, Visualizations & Executive Print View
+#### Phase 4: Dashboard UI, Visualizations & Executive Print View (COMPLETED)
 *Goal: Deliver the responsive, bilingual RTL management dashboard.*
-- [NEW] [settings.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/settings.php) - Admin configuration area (Organization resolution mode: Category vs `CompanyName` vs Hybrid; root category selector; workweek boundaries).
-- [NEW] [index.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/index.php) - Main dashboard controller with scope enforcement.
-- [NEW] [templates/dashboard.mustache](file:///home/mohammad/Dev/plugins/local/report/adminreport/templates/dashboard.mustache) - Dashboard shell with full RTL support.
-- [NEW] [templates/kpi_cards.mustache](file:///home/mohammad/Dev/plugins/local/report/adminreport/templates/kpi_cards.mustache) - Period KPI cards with YTD badges.
-- [NEW] [templates/operational_table.mustache](file:///home/mohammad/Dev/plugins/local/report/adminreport/templates/operational_table.mustache) - Paginated, searchable operational schedule table.
-- [NEW] [amd/src/apexcharts.js](file:///home/mohammad/Dev/plugins/local/report/adminreport/amd/src/apexcharts.js) - Bundled ApexCharts 3.x.
-- [NEW] [amd/src/charts.js](file:///home/mohammad/Dev/plugins/local/report/adminreport/amd/src/charts.js) - ApexCharts initializer for Donut, Stacked Column, and Trend Line with RTL support.
-- [NEW] [amd/src/dashboard.js](file:///home/mohammad/Dev/plugins/local/report/adminreport/amd/src/dashboard.js) - AJAX filter controller.
-- [NEW] [styles.css](file:///home/mohammad/Dev/plugins/local/report/adminreport/styles.css) - Includes `@media print` rules for clean, executive-ready PDF printing.
-- [NEW] [lang/en/local_adminreport.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/lang/en/local_adminreport.php) - English strings.
-- [NEW] [lang/ar/local_adminreport.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/lang/ar/local_adminreport.php) - Native Arabic strings.
+- [x] [settings.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/settings.php) - Admin configuration area (Organization resolution mode: Category vs `CompanyName` vs Hybrid; root category selector; workweek boundaries).
+- [x] [index.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/index.php) - Main dashboard controller with scope enforcement.
+- [x] [templates/dashboard.mustache](file:///home/mohammad/Dev/plugins/local/report/adminreport/templates/dashboard.mustache) - Dashboard shell with full RTL support.
+- [x] [templates/kpi_cards.mustache](file:///home/mohammad/Dev/plugins/local/report/adminreport/templates/kpi_cards.mustache) - Period KPI cards with YTD badges.
+- [x] [templates/operational_table.mustache](file:///home/mohammad/Dev/plugins/local/report/adminreport/templates/operational_table.mustache) - Paginated, searchable operational schedule table.
+- [x] [amd/src/apexcharts.js](file:///home/mohammad/Dev/plugins/local/report/adminreport/amd/src/apexcharts.js) - Bundled ApexCharts 3.x.
+- [x] [amd/src/charts.js](file:///home/mohammad/Dev/plugins/local/report/adminreport/amd/src/charts.js) - ApexCharts initializer for Donut, Stacked Column, and Trend Line with RTL support.
+- [x] [amd/src/dashboard.js](file:///home/mohammad/Dev/plugins/local/report/adminreport/amd/src/dashboard.js) - AJAX filter controller.
+- [x] [styles.css](file:///home/mohammad/Dev/plugins/local/report/adminreport/styles.css) - Includes `@media print` rules for clean, executive-ready PDF printing.
+- [x] [lang/en/local_adminreport.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/lang/en/local_adminreport.php) - English strings.
+- [x] [lang/ar/local_adminreport.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/lang/ar/local_adminreport.php) - Native Arabic strings.
+- [x] [cli/test_phase4.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/cli/test_phase4.php) - Phase 4 automated verification test suite.
 
 #### Phase 5: Export Engine & Reconciliation Tests
 *Goal: Provide Excel export and verify mathematical correctness against reference targets.*
