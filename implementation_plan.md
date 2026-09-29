@@ -66,33 +66,36 @@ Transform raw Moodle LMS data into an executive-grade **Management Intelligence 
 
 ### Detailed Deliverables by Phase
 
-#### Phase 1: Foundation, Database Architecture & Core Infrastructure
+#### Phase 1: Foundation, Database Architecture & Core Infrastructure (COMPLETED)
 *Goal: Establish the valid, installable Moodle plugin skeleton and complete relational schema.*
-- [NEW] [version.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/version.php) - Component declaration (`local_adminreport`), requires Moodle 4.5+ (`2024100700`+), maturity `MATURITY_ALPHA`.
-- [NEW] [db/install.xml](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/install.xml) - Complete XMLDB schema with unique keys, foreign keys, and indexes for all 7 tables.
-- [NEW] [db/access.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/access.php) - Capabilities with risk bitmasks.
-- [NEW] [db/tasks.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/tasks.php) - Scheduled tasks: `aggregate_analytics` (nightly) and `auto_discover_runs` (hourly).
-- [NEW] [db/services.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/services.php) - External AJAX Web Service registration (`local_adminreport_get_report_data`).
-- [NEW] [db/caches.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/caches.php) - MUC cache definition (`reports_data`) with scope-hashed application TTL.
-- [NEW] [classes/privacy/provider.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/privacy/provider.php) - Full Moodle Privacy Provider exporting/deleting trainer and scope references.
-- [NEW] [thirdpartylibs.xml](file:///home/mohammad/Dev/plugins/local/report/adminreport/thirdpartylibs.xml) - Registration of ApexCharts (MIT License).
+- [x] [version.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/version.php) - Component declaration (`local_adminreport`), requires Moodle 4.5+ (`2024100700`+), maturity `MATURITY_ALPHA`.
+- [x] [db/install.xml](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/install.xml) - Complete XMLDB schema with unique keys, foreign keys, and indexes for all 7 tables.
+- [x] [db/access.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/access.php) - Capabilities with risk bitmasks.
+- [x] [db/tasks.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/tasks.php) - Scheduled tasks: `aggregate_analytics` (nightly) and `auto_discover_runs` (hourly).
+- [x] [db/services.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/services.php) - External AJAX Web Service registration (`local_adminreport_get_report_data`).
+- [x] [db/caches.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/db/caches.php) - MUC cache definition (`reports_data`) with scope-hashed application TTL.
+- [x] [classes/privacy/provider.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/privacy/provider.php) - Full Moodle Privacy Provider exporting/deleting trainer and scope references.
+- [x] [thirdpartylibs.xml](file:///home/mohammad/Dev/plugins/local/report/adminreport/thirdpartylibs.xml) - Registration of ApexCharts (MIT License).
 
-#### Phase 2: Dual Dimension Resolution & Runs Management
+#### Phase 2: Dual Dimension Resolution & Runs Management (COMPLETED)
 *Goal: Provide the data resolution and population layer supporting both Categories and User Profile Field `CompanyName`.*
-- [NEW] [classes/analytics/dimension_manager.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/dimension_manager.php) - Dual company resolver: Category path, User Profile field `CompanyName` (`mdl_user_info_data`), or Smart Hybrid.
-- [NEW] [classes/form/run_form.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/form/run_form.php) - Moodle QuickForm to create/edit run schedules and classroom logistics.
-- [NEW] [runs.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/runs.php) - Web interface to manage, search, filter, and cancel runs.
-- [NEW] [classes/import/run_importer.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/import/run_importer.php) - CSV/XLSX importer for planned upcoming runs and historical records.
-- [NEW] [classes/task/auto_discover_runs.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/task/auto_discover_runs.php) - Auto-discovers and creates default runs from Moodle courses.
-- [NEW] [cli/rebuild_warehouse.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/cli/rebuild_warehouse.php) - Administrative CLI tool to rebuild facts across custom date windows.
+- [x] [classes/analytics/dimension_manager.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/dimension_manager.php) - Dual company resolver: Category path, User Profile field `CompanyName` (`mdl_user_info_data`), or Smart Hybrid.
+- [x] [classes/form/run_form.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/form/run_form.php) - Moodle QuickForm to create/edit run schedules and classroom logistics.
+- [x] [runs.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/runs.php) - Web interface to manage, search, filter, and cancel runs.
+- [x] [classes/import/run_importer.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/import/run_importer.php) - CSV/XLSX importer for planned upcoming runs and historical records.
+- [x] [import.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/import.php) - Web interface to upload or paste CSV and download template.
+- [x] [classes/task/auto_discover_runs.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/task/auto_discover_runs.php) - Auto-discovers and creates default runs from Moodle courses with teacher auto-assignment.
+- [x] [cli/rebuild_warehouse.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/cli/rebuild_warehouse.php) - Administrative CLI tool to rebuild facts across custom date windows.
+- [x] [cli/test_phase2.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/cli/test_phase2.php) - Phase 2 automated test suite covering dimensions, custom profile fields, auto-discovery, and CSV import.
 
-#### Phase 3: Analytics Engine, Watermark Tier Stitcher & Scoping
+#### Phase 3: Analytics Engine, Watermark Tier Stitcher & Scoping (COMPLETED)
 *Goal: Build the high-performance calculation engine that aggregates data without table locks or N+1 queries.*
-- [NEW] [classes/analytics/query_engine.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/query_engine.php) - Single-pass SQL engine with unified `compute_run_facts($run, $date)` supporting multi-company runs.
-- [NEW] [classes/analytics/tier_stitcher.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/tier_stitcher.php) - Watermark-based tier stitching (Warehouse $\le$ watermark + Intraday watermark+1 to now).
-- [NEW] [classes/analytics/early_warning.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/early_warning.php) - On-demand at-risk trainee evaluation.
-- [NEW] [classes/task/aggregate_analytics.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/task/aggregate_analytics.php) - Nightly cron task updating watermark with 7-day rolling lookback.
-- [NEW] [classes/external/get_report_data.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/external/get_report_data.php) - External API endpoint with context validation and scope enforcement.
+- [x] [classes/analytics/query_engine.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/query_engine.php) - Single-pass SQL engine with unified `compute_run_facts($run, $date)` supporting multi-company runs.
+- [x] [classes/analytics/tier_stitcher.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/tier_stitcher.php) - Watermark-based tier stitching (Warehouse $\le$ watermark + Intraday watermark+1 to now).
+- [x] [classes/analytics/early_warning.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/analytics/early_warning.php) - On-demand at-risk trainee evaluation.
+- [x] [classes/task/aggregate_analytics.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/task/aggregate_analytics.php) - Nightly cron task updating watermark with 7-day rolling lookback.
+- [x] [classes/external/get_report_data.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/classes/external/get_report_data.php) - External API endpoint with context validation and scope enforcement.
+- [x] [cli/test_phase3.php](file:///home/mohammad/Dev/plugins/local/report/adminreport/cli/test_phase3.php) - Phase 3 automated test suite covering flow calculations, tier stitching, early warning, and scheduled task.
 
 #### Phase 4: Dashboard UI, Visualizations & Executive Print View
 *Goal: Deliver the responsive, bilingual RTL management dashboard.*

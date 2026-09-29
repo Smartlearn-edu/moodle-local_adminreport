@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/adminreport/db" VERSION="20260929" COMMENT="XMLDB schema for local_adminreport">
+  <TABLES>
+    <TABLE NAME="local_adminreport_dim_types" COMMENT="Dimension definitions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="source_type" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="source_config" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="code_uniq" TYPE="unique" FIELDS="code"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="local_adminreport_dim_members" COMMENT="Dimension members and hierarchy">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="dim_type_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="parent_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="dim_type_fk" TYPE="foreign" FIELDS="dim_type_id" REFTABLE="local_adminreport_dim_types" REFFIELDS="id"/>
+        <KEY NAME="type_code_uniq" TYPE="unique" FIELDS="dim_type_id, code"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="parent_idx" UNIQUE="false" FIELDS="parent_id"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_adminreport_runs" COMMENT="Program offerings and execution runs">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="run_code" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="startdate" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="enddate" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="org_dim_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="type_dim_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="location_dim_id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="classroom" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="daily_start_time" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="08:00" SEQUENCE="false"/>
+        <FIELD NAME="daily_end_time" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="14:00" SEQUENCE="false"/>
+        <FIELD NAME="break_duration_min" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="30" SEQUENCE="false"/>
+        <FIELD NAME="exam_time" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="is_cancelled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="source" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="moodle_course" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course_fk" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dates_idx" UNIQUE="false" FIELDS="startdate, enddate"/>
+        <INDEX NAME="org_idx" UNIQUE="false" FIELDS="org_dim_id"/>
+        <INDEX NAME="type_idx" UNIQUE="false" FIELDS="type_dim_id"/>
+        <INDEX NAME="loc_idx" UNIQUE="false" FIELDS="location_dim_id"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_adminreport_run_trainers" COMMENT="Trainers assigned to runs">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="run_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="trainer_name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="is_primary" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="run_fk" TYPE="foreign" FIELDS="run_id" REFTABLE="local_adminreport_runs" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="user_idx" UNIQUE="false" FIELDS="userid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_adminreport_daily_stats" COMMENT="Daily flow analytics facts supporting multi-company runs">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="stat_date" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="run_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="org_dim_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="participations_flow" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="completions_flow" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="day_training_hours" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0.00" SEQUENCE="false"/>
+        <FIELD NAME="grade_sum" TYPE="number" LENGTH="12" DECIMALS="2" NOTNULL="true" DEFAULT="0.00" SEQUENCE="false"/>
+        <FIELD NAME="grade_count" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="run_fk" TYPE="foreign" FIELDS="run_id" REFTABLE="local_adminreport_runs" REFFIELDS="id"/>
+        <KEY NAME="org_fk" TYPE="foreign" FIELDS="org_dim_id" REFTABLE="local_adminreport_dim_members" REFFIELDS="id"/>
+        <KEY NAME="date_run_org_uniq" TYPE="unique" FIELDS="stat_date, run_id, org_dim_id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="stat_date_idx" UNIQUE="false" FIELDS="stat_date"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_adminreport_monthly_stats" COMMENT="Monthly rolled-up fact warehouse">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="year" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="month" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="org_dim_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="type_dim_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="location_dim_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="runs_count" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="participations_count" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="completions_count" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="total_training_hours" TYPE="number" LENGTH="12" DECIMALS="2" NOTNULL="true" DEFAULT="0.00" SEQUENCE="false"/>
+        <FIELD NAME="grade_sum" TYPE="number" LENGTH="14" DECIMALS="2" NOTNULL="true" DEFAULT="0.00" SEQUENCE="false"/>
+        <FIELD NAME="grade_count" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="month_dim_uniq" TYPE="unique" FIELDS="year, month, org_dim_id, type_dim_id, location_dim_id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="year_month_idx" UNIQUE="false" FIELDS="year, month"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_adminreport_scope" COMMENT="User and role dimension access scoping">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="scope_type" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="scope_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="dim_member_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="dim_member_fk" TYPE="foreign" FIELDS="dim_member_id" REFTABLE="local_adminreport_dim_members" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="scope_idx" UNIQUE="false" FIELDS="scope_type, scope_id"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

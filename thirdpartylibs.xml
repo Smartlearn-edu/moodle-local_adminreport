@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<libraries>
+  <library>
+    <location>amd/src/apexcharts.js</location>
+    <name>ApexCharts</name>
+    <version>3.53.0</version>
+    <license>MIT</license>
+    <licenseversion></licenseversion>
+    <description>Modern interactive charting library supporting full Arabic RTL, responsive SVG rendering, and built-in export.</description>
+  </library>
+</libraries>
