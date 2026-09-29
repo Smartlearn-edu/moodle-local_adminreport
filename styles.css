@@ -119,19 +119,26 @@
 /* -------------------------------------------------------------
    Loading Spinner Overlay
    ------------------------------------------------------------- */
-#dashboard-loading-overlay {
+.adminreport-dashboard-container #dashboard-loading-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(255, 255, 255, 0.75);
-    z-index: 1000;
-    display: flex;
+    z-index: 10;
+    display: none;
     justify-content: center;
     align-items: center;
     border-radius: 0.75rem;
     backdrop-filter: blur(2px);
+    pointer-events: none;
+}
+
+.adminreport-dashboard-container.is-loading #dashboard-loading-overlay,
+.adminreport-dashboard-container #dashboard-loading-overlay.is-active {
+    display: flex;
+    pointer-events: auto;
 }
 
 /* -------------------------------------------------------------

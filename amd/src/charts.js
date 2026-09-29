@@ -40,6 +40,21 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
     ];
 
     /**
+     * Resolve ApexCharts constructor safely.
+     *
+     * @return {Function|null}
+     */
+    function getApex() {
+        if (typeof ApexCharts !== 'undefined' && ApexCharts) {
+            return ApexCharts;
+        }
+        if (typeof window !== 'undefined' && window.ApexCharts) {
+            return window.ApexCharts;
+        }
+        return null;
+    }
+
+    /**
      * Safely destroy an existing chart instance.
      *
      * @param {string} elementId
@@ -73,6 +88,12 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
             if (!data || !data.series || data.series.length === 0) {
                 el.innerHTML = '<div class="text-center text-muted p-4">' +
                     (isRtl ? 'لا توجد بيانات متاحة للمواقع' : 'No location data available') + '</div>';
+                return;
+            }
+
+            var Apex = getApex();
+            if (!Apex) {
+                console.warn('local_adminreport: ApexCharts is not available.');
                 return;
             }
 
@@ -130,9 +151,13 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
                 }
             };
 
-            var chart = new ApexCharts(el, options);
-            chart.render();
-            chartInstances[elementId] = chart;
+            try {
+                var chart = new Apex(el, options);
+                chart.render();
+                chartInstances[elementId] = chart;
+            } catch (err) {
+                console.error('local_adminreport: Failed to render locations chart:', err);
+            }
         },
 
         /**
@@ -152,6 +177,12 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
             if (!data || !data.categories || data.categories.length === 0) {
                 el.innerHTML = '<div class="text-center text-muted p-4">' +
                     (isRtl ? 'لا توجد بيانات لتصنيفات البرامج' : 'No classification data available') + '</div>';
+                return;
+            }
+
+            var Apex = getApex();
+            if (!Apex) {
+                console.warn('local_adminreport: ApexCharts is not available.');
                 return;
             }
 
@@ -200,9 +231,13 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
                 }
             };
 
-            var chart = new ApexCharts(el, options);
-            chart.render();
-            chartInstances[elementId] = chart;
+            try {
+                var chart = new Apex(el, options);
+                chart.render();
+                chartInstances[elementId] = chart;
+            } catch (err) {
+                console.error('local_adminreport: Failed to render classifications chart:', err);
+            }
         },
 
         /**
@@ -222,6 +257,12 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
             if (!data || !data.categories || data.categories.length === 0) {
                 el.innerHTML = '<div class="text-center text-muted p-4">' +
                     (isRtl ? 'لا توجد بيانات مسار تاريخي متاحة' : 'No trend data available') + '</div>';
+                return;
+            }
+
+            var Apex = getApex();
+            if (!Apex) {
+                console.warn('local_adminreport: ApexCharts is not available.');
                 return;
             }
 
@@ -285,9 +326,13 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
                 }
             };
 
-            var chart = new ApexCharts(el, options);
-            chart.render();
-            chartInstances[elementId] = chart;
+            try {
+                var chart = new Apex(el, options);
+                chart.render();
+                chartInstances[elementId] = chart;
+            } catch (err) {
+                console.error('local_adminreport: Failed to render trends chart:', err);
+            }
         }
     };
 });

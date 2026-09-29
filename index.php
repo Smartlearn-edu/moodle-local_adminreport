@@ -33,7 +33,6 @@ $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/adminreport/index.php'));
 $PAGE->set_title(get_string('dashboard', 'local_adminreport'));
 $PAGE->set_heading(get_string('pluginname', 'local_adminreport'));
-$PAGE->requires->css(new moodle_url('/local/adminreport/styles.css'));
 
 // 1. Resolve user scoping and capabilities.
 $allowedorgs = \local_adminreport\analytics\tier_stitcher::get_user_allowed_orgs((int) $USER->id);

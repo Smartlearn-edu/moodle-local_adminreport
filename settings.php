@@ -25,31 +25,27 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    // 1. Add direct navigation links under Site Administration -> Reports.
-    $ADMIN->add('reports', new admin_externalpage(
+    // 1. Settings page (automatically added by Moodle core to 'localplugins' in admin/settings/plugins.php).
+    $settings = new admin_settingpage('local_adminreport', get_string('settings', 'local_adminreport'));
+
+    // Add navigation external links directly under 'localplugins' so they appear in Site Admin -> Plugins -> Local plugins.
+    $ADMIN->add('localplugins', new admin_externalpage(
         'local_adminreport_dashboard',
         get_string('dashboard', 'local_adminreport'),
-        new moodle_url('/local/adminreport/index.php'),
-        'local/adminreport:view'
+        new moodle_url('/local/adminreport/index.php')
     ));
 
-    $ADMIN->add('reports', new admin_externalpage(
+    $ADMIN->add('localplugins', new admin_externalpage(
         'local_adminreport_runs',
         get_string('runs', 'local_adminreport'),
-        new moodle_url('/local/adminreport/runs.php'),
-        'local/adminreport:manage'
+        new moodle_url('/local/adminreport/runs.php')
     ));
 
-    $ADMIN->add('reports', new admin_externalpage(
+    $ADMIN->add('localplugins', new admin_externalpage(
         'local_adminreport_import',
         get_string('import_runs', 'local_adminreport'),
-        new moodle_url('/local/adminreport/import.php'),
-        'local/adminreport:manage'
+        new moodle_url('/local/adminreport/import.php')
     ));
-
-    // 2. Settings page.
-    $settings = new admin_settingpage('local_adminreport', get_string('settings', 'local_adminreport'));
-    $ADMIN->add('reports', $settings);
 
     // Organization Resolution Mode.
     $orgmodes = [

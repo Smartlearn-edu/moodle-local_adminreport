@@ -91,9 +91,21 @@ define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'],
         if (!chartData) {
             return;
         }
-        Charts.renderLocationsChart('chart-locations-container', chartData.locations, isRtl);
-        Charts.renderClassificationsChart('chart-classifications-container', chartData.classifications, isRtl);
-        Charts.renderTrendsChart('chart-trends-container', chartData.trends, isRtl);
+        try {
+            Charts.renderLocationsChart('chart-locations-container', chartData.locations, isRtl);
+        } catch (e) {
+            console.error('local_adminreport: Failed to render locations chart:', e);
+        }
+        try {
+            Charts.renderClassificationsChart('chart-classifications-container', chartData.classifications, isRtl);
+        } catch (e) {
+            console.error('local_adminreport: Failed to render classifications chart:', e);
+        }
+        try {
+            Charts.renderTrendsChart('chart-trends-container', chartData.trends, isRtl);
+        } catch (e) {
+            console.error('local_adminreport: Failed to render trends chart:', e);
+        }
     }
 
     /**
@@ -118,7 +130,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'],
         }
 
         // Show loading spinner overlay.
-        $('#dashboard-loading-overlay').removeClass('d-none');
+        $('#dashboard-loading-overlay').removeClass('d-none').addClass('is-active');
 
         Ajax.call([{
             methodname: 'local_adminreport_get_report_data',
@@ -131,7 +143,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'],
                 loc_dim_id: filterLoc
             }
         }])[0].done(function(response) {
-            $('#dashboard-loading-overlay').addClass('d-none');
+            $('#dashboard-loading-overlay').addClass('d-none').removeClass('is-active');
             if (response && response.data) {
                 var data = JSON.parse(response.data);
                 updateKPICards(data.metrics, data.ytd_metrics);
@@ -147,7 +159,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'],
                 }
             }
         }).fail(function(ex) {
-            $('#dashboard-loading-overlay').addClass('d-none');
+            $('#dashboard-loading-overlay').addClass('d-none').removeClass('is-active');
             Notification.exception(ex);
         });
     }
@@ -159,60 +171,64 @@ define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'],
          * @param {Object} config
          */
         init: function(config) {
-            isRtl = config.isRtl || false;
-            currentPeriod = config.initialPeriod || 'week';
+            try {
+                isRtl = (config && config.isRtl) || false;
+                currentPeriod = (config && config.initialPeriod) || 'week';
 
-            // Initial render of charts from embedded server payload.
-            if (config.initialData && config.initialData.charts) {
-                updateCharts(config.initialData.charts);
-            }
-
-            // Period Tab Click.
-            $('.period-btn').on('click', function(e) {
-                e.preventDefault();
-                $('.period-btn').removeClass('active btn-primary').addClass('btn-outline-primary');
-                $(this).addClass('active btn-primary').removeClass('btn-outline-primary');
-
-                currentPeriod = $(this).data('period');
-
-                if (currentPeriod === 'custom') {
-                    $('#custom-date-controls').removeClass('d-none');
-                } else {
-                    $('#custom-date-controls').addClass('d-none');
-                    loadReportData();
+                // Initial render of charts from embedded server payload.
+                if (config && config.initialData && config.initialData.charts) {
+                    updateCharts(config.initialData.charts);
                 }
-            });
 
-            // Custom date inputs change.
-            $('#apply-custom-dates').on('click', function() {
-                loadReportData();
-            });
+                // Period Tab Click.
+                $('.period-btn').on('click', function(e) {
+                    e.preventDefault();
+                    $('.period-btn').removeClass('active btn-primary').addClass('btn-outline-primary');
+                    $(this).addClass('active btn-primary').removeClass('btn-outline-primary');
 
-            // Filter dropdowns change.
-            $('#filter-org, #filter-type, #filter-location').on('change', function() {
-                loadReportData();
-            });
+                    currentPeriod = $(this).data('period');
 
-            // Reset filters.
-            $('#btn-reset-filters').on('click', function() {
-                $('#filter-org').val('0');
-                $('#filter-type').val('0');
-                $('#filter-location').val('0');
-                loadReportData();
-            });
-
-            // Client-side search in operational table.
-            $('#table-search-input').on('keyup', function() {
-                var val = $(this).val().toLowerCase();
-                $('#operational-runs-table tbody tr').filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1);
+                    if (currentPeriod === 'custom') {
+                        $('#custom-date-controls').removeClass('d-none');
+                    } else {
+                        $('#custom-date-controls').addClass('d-none');
+                        loadReportData();
+                    }
                 });
-            });
 
-            // Print button.
-            $('#btn-print-dashboard').on('click', function() {
-                window.print();
-            });
+                // Custom date inputs change.
+                $('#apply-custom-dates').on('click', function() {
+                    loadReportData();
+                });
+
+                // Filter dropdowns change.
+                $('#filter-org, #filter-type, #filter-location').on('change', function() {
+                    loadReportData();
+                });
+
+                // Reset filters.
+                $('#btn-reset-filters').on('click', function() {
+                    $('#filter-org').val('0');
+                    $('#filter-type').val('0');
+                    $('#filter-location').val('0');
+                    loadReportData();
+                });
+
+                // Client-side search in operational table.
+                $('#table-search-input').on('keyup', function() {
+                    var val = $(this).val().toLowerCase();
+                    $('#operational-runs-table tbody tr').filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1);
+                    });
+                });
+
+                // Print button.
+                $('#btn-print-dashboard').on('click', function() {
+                    window.print();
+                });
+            } catch (err) {
+                console.error('local_adminreport: Dashboard initialization error:', err);
+            }
         }
     };
 });
