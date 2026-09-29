@@ -3,7 +3,7 @@
 * **Component:** `local_adminreport`
 * **Target Platforms:** Moodle 4.5+ / 5.x Ready
 * **License:** GNU GPL v3 or later (Bundled JS: MIT / Apache 2.0 compatible)
-* **Status:** Complete Technical Specification & Data Model (Revision 2.1 — Pre-Implementation Freeze)
+* **Status:** Complete Technical Specification & Data Model (Revision 2.2 — Dual Company Resolution & Phased Architecture)
 
 ---
 
@@ -22,7 +22,50 @@ $$\mathbf{Analytics} = \mathbf{Metric} \times \mathbf{Dimension} \times \mathbf{
 
 ---
 
-## 2. Core Entities: The Offering / Run Lifecycle
+## 2. Dual Company Resolution (الجهات): Course Categories + User Profile Fields
+
+In enterprise training environments such as `lms.swa.gov.sa`, sponsoring companies and client affiliations (**الجهات**) are defined via two distinct Moodle mechanisms:
+
+1. **Mechanism A: Course Category Hierarchy:**
+   * Courses dedicated to a single corporate client are grouped under a specific category (e.g., `Erwaa`, `Nama`, `MOMC-NC - شركة المياه الوطنية`, `برامج السلامة NWC`).
+   * The course inherits its sponsoring organization from its ancestor category.
+2. **Mechanism B: User Profile Custom Field (`CompanyName`):**
+   * Every individual trainee in Moodle has a custom profile field (`shortname: CompanyName`, Name: `{mlang en}Company Name{mlang} {mlang ar}اسم الجهة التابع لها{mlang}`).
+   * This is critical for **shared cohort programs** (such as diplomas, summer camps, or technical courses like *Electronics Fundamentals* or *Diesel Engines*) where trainees from multiple companies (e.g. *Alkhorayef*, *ILF*, *Bewater*) attend the **same single run**.
+
+```
+                           Sponsoring Organization Resolution
+                                           │
+             ┌─────────────────────────────┴─────────────────────────────┐
+             ▼                                                           ▼
+    [ Course Category ]                                       [ User Profile Field ]
+    (e.g., Category: "Erwaa")                                 (mdl_user_info_data: "CompanyName")
+             │                                                           │
+             │ Dedicated Single-Client Courses                           │ Multi-Client Shared Batches
+             │                                                           │ (e.g. Alkhorayef + ILF + Bewater)
+             └─────────────────────────────┬─────────────────────────────┘
+                                           ▼
+                            [ Smart Hybrid Resolver ]
+               1. If course is under a specific Client Category → Use Category
+               2. If course is in a Shared/General Category → Resolve by Trainee Profile
+```
+
+### The 3 Configurable Resolution Modes (Admin Settings)
+In `settings.php`, the administrator configures the **Organization Resolution Strategy**:
+* **Mode 1 (Course Category Only):** Resolves the organization strictly from the course's category path.
+* **Mode 2 (User Profile Field Only):** Resolves the organization for each enrolled learner dynamically by querying `mdl_user_info_data` where `fieldid` matches `CompanyName`.
+* **Mode 3 (Smart Hybrid — Recommended Default):**
+  * If the course is located inside a recognized client category under root category $\rightarrow$ That client is the primary organization.
+  * If the course is located inside a shared program category (e.g., *Diplomas*, *Licensure*, *Research Initiatives*) $\rightarrow$ Each trainee's participation is attributed to their employer from `CompanyName`.
+
+### Supporting Multi-Company Runs in `daily_stats`
+To seamlessly support shared courses with trainees from multiple companies without loss of precision, `mdl_local_adminreport_daily_stats` includes `org_dim_id` with a compound unique key on `(stat_date, run_id, org_dim_id)`:
+* A dedicated course has **1 fact row** per day (`run_id = 10, org = Erwaa, participations = 20`).
+* A shared course has **$N$ fact rows** per day (`run_id = 12, org = Alkhorayef, participations = 18; org = ILF, participations = 14; org = Bewater, participations = 18`). Total run participations = $50$.
+
+---
+
+## 3. Core Entities: The Offering / Run Lifecycle
 
 ### A. The Offering / Run Abstraction
 A single program code (e.g., `32401 Intro to PM` or `EARO011025 Automation Sensors`) frequently recurs across different dates, classrooms, trainers, and regional branches. 
@@ -37,7 +80,7 @@ mdl_local_adminreport_runs
 ├── run_code            (String: Course/Run Code e.g. "32401", "EARO011025")
 ├── startdate           (Unix timestamp of run start, BIGINT(10))
 ├── enddate             (Unix timestamp of run end, BIGINT(10))
-├── org_dim_id          (FK to dim_members: SWA, NWC, Erwaa, Nama...)
+├── org_dim_id          (FK to dim_members: SWA, NWC, Erwaa, Nama... NULLABLE for shared runs)
 ├── type_dim_id         (FK to dim_members: Developmental, Qualifying, Diploma...)
 ├── location_dim_id     (FK to dim_members: Riyadh, Jubail, Hail, Online...)
 ├── classroom           (String: Room / Lab e.g. "B1-15", "B1-79", "ON LINE")
@@ -57,8 +100,8 @@ The lifecycle state of a run is **derived at runtime from dates** (avoiding stal
 * If $\text{startdate} \le \text{current\_time} \le \text{enddate}$ $\rightarrow$ **Running** (قيد التنفيذ)
 * If $\text{current\_time} > \text{enddate}$ $\rightarrow$ **Completed** (منجز)
 
-### C. Multi-Trainer Support & Privacy
-To accommodate runs with multiple trainers and external non-Moodle instructors without violating Moodle user constraints, trainers are stored in a dedicated junction table:
+### C. Multi-Trainer Support
+Trainers are stored in a dedicated junction table supporting external instructors without requiring Moodle accounts:
 
 ```
 mdl_local_adminreport_run_trainers
@@ -69,16 +112,9 @@ mdl_local_adminreport_run_trainers
 └── is_primary          (TINYINT(1), default 1)
 ```
 
-### D. Run Management & Population Lifecycles
-The plugin provides four creation mechanisms:
-1. **Auto-Discovery Task:** Scans courses in configured categories; automatically creates runs for courses with `startdate`/`enddate`.
-2. **Web Management Interface:** `runs.php` with Moodle QuickForm (`classes/form/run_form.php`) for editing run logistics (classroom, daily times, break, exam).
-3. **Batch Importer (`classes/import/run_importer.php`):** Upload CSV/XLSX spreadsheets to populate planned upcoming runs or import historical legacy records (`source = 'imported'`).
-4. **Rebuild Tool:** CLI (`cli/rebuild_warehouse.php`) and admin button to re-sync facts after bulk imports.
-
 ---
 
-## 3. One-Page Metric Dictionary & Mathematical Hygiene
+## 4. One-Page Metric Dictionary & Mathematical Hygiene
 
 ### A. Core Metric Definitions (Stock vs. Flow)
 Daily fact records represent **flow (incremental activity)**, not stock. Storing enrollments on every day of a run would cause summing a 5-day week to report $5 \times 20 = 100$ participant-days instead of $20$ trainees.
@@ -96,7 +132,6 @@ Daily fact records represent **flow (incremental activity)**, not stock. Storing
 ### B. Period Attribution Rules
 1. **Delivered Volume Reporting (البرامج المنفذة):**
    * Default setting: Attributed by run **`enddate`** (`enddate >= period_start AND enddate <= period_end`). Counted **exactly once**.
-   * (Alternative configurable setting: by `startdate`).
 2. **Operational Schedule & Capacity Reporting (خطط التدريب / الجارية):**
    * Uses **interval overlap** (`startdate <= period_end AND enddate >= period_start`).
    * Used for room utilization and weekly schedules.
@@ -129,15 +164,15 @@ The reference PPT contains human clerical errors in its summary box. The testing
 
 ---
 
-## 4. Normalized Dimension Model & Sector Hierarchy
+## 5. Normalized Dimension Model & Sector Hierarchy
 
 ```
   mdl_local_adminreport_dim_types
   ├── id (PK)
   ├── code             (UNIQUE: 'sector', 'organization', 'program_type', 'location')
   ├── name             (VARCHAR(100): Display title / lang string key)
-  ├── source_type      (Enum: 'category', 'customfield', 'manual')
-  └── source_config    (TEXT: Configuration JSON / Root Category ID / Field Shortname)
+  ├── source_type      (Enum: 'category', 'user_profile_field', 'customfield', 'manual')
+  └── source_config    (TEXT: Configuration JSON e.g. root category ID, profile field shortname 'CompanyName')
             │
             ▼
   mdl_local_adminreport_dim_members
@@ -149,16 +184,9 @@ The reference PPT contains human clerical errors in its summary box. The testing
   └── timemodified     (BIGINT(10))
 ```
 
-### Hierarchy & Normalized Joins
-* **Sector $\rightarrow$ Organization Mapping:**
-  * Sector: `Corporate (الشركات)` $\rightarrow$ Members: `NWC`, `Erwaa`, `WTCO`, `Alkhorayef`
-  * Sector: `Government & Military (الحكومي والعسكري)` $\rightarrow$ Members: `SWA`, `Military`
-  * Sector: `GCC (دول الخليج)` $\rightarrow$ Members: `Nama Oman`
-* **Zero Denormalization in Daily Facts:** Fact rows store only `run_id`. All dimension IDs (`org_dim_id`, `type_dim_id`, `location_dim_id`) are resolved by joining `mdl_local_adminreport_runs`. This eliminates data drift if a run's dimension mapping is edited.
-
 ---
 
-## 5. Scope Resolution & Access Control
+## 6. Scope Resolution & Access Control
 
 ### A. The Scoping Table (`mdl_local_adminreport_scope`)
 To govern which corporate managers or department heads see which organizations:
@@ -178,13 +206,11 @@ When a user accesses the dashboard, external API, or export:
 2. Otherwise, query `mdl_local_adminreport_scope` for records matching `userid = $USER->id` or active assigned roles.
 3. Compute `$scopehash = $allowed_org_ids === null ? 'global' : md5(implode(',', sort($allowed_org_ids)))`.
 4. **Dropdown Filter Scoping:** The organization and sector dropdown menus query only `$allowed_org_ids`. A corporate manager never sees other companies in their filter list.
-5. **SQL Enforcement:** All queries in `query_engine.php` and `export.php` enforce `WHERE r.org_dim_id IN (...)`.
+5. **SQL Enforcement:** All queries in `query_engine.php` and `export.php` enforce `WHERE r.org_dim_id IN (...)` (or fact `org_dim_id IN (...)`).
 
 ---
 
-## 6. Watermark Tier Seam & Unification Algorithm
-
-To guarantee zero double-counting, zero downtime, and resilience against cron delays:
+## 7. Watermark Tier Seam & Unification Algorithm
 
 ```
                         Timeline of Analytics Tiers
@@ -219,7 +245,7 @@ Earlier Days          Watermark Date (e.g. Yesterday 23:59:59)            Now
 
 ---
 
-## 7. Complete XMLDB Database Schema (`db/install.xml`)
+## 8. Complete XMLDB Database Schema (`db/install.xml`)
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -307,11 +333,12 @@ Earlier Days          Watermark Date (e.g. Yesterday 23:59:59)            Now
       </INDEXES>
     </TABLE>
 
-    <TABLE NAME="local_adminreport_daily_stats" COMMENT="Daily flow analytics facts">
+    <TABLE NAME="local_adminreport_daily_stats" COMMENT="Daily flow analytics facts supporting multi-company runs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="stat_date" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="run_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="org_dim_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="participations_flow" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="completions_flow" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="day_training_hours" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0.00" SEQUENCE="false"/>
@@ -322,7 +349,8 @@ Earlier Days          Watermark Date (e.g. Yesterday 23:59:59)            Now
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="run_fk" TYPE="foreign" FIELDS="run_id" REFTABLE="local_adminreport_runs" REFFIELDS="id"/>
-        <KEY NAME="date_run_uniq" TYPE="unique" FIELDS="stat_date, run_id"/>
+        <KEY NAME="org_fk" TYPE="foreign" FIELDS="org_dim_id" REFTABLE="local_adminreport_dim_members" REFFIELDS="id"/>
+        <KEY NAME="date_run_org_uniq" TYPE="unique" FIELDS="stat_date, run_id, org_dim_id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="stat_date_idx" UNIQUE="false" FIELDS="stat_date"/>
@@ -376,23 +404,13 @@ Earlier Days          Watermark Date (e.g. Yesterday 23:59:59)            Now
 
 ---
 
-## 8. Privacy API Compliance (`classes/privacy/provider.php`)
+## 9. Privacy API Compliance (`classes/privacy/provider.php`)
 
 Because `mdl_local_adminreport_run_trainers.userid` and `mdl_local_adminreport_scope.scope_id` associate Moodle user IDs with records, the plugin implements the complete **Moodle Privacy API**:
 * `get_metadata()`: Registers trainer assignments in `local_adminreport_run_trainers` and scoping in `local_adminreport_scope`.
 * `get_contexts_for_userid()`: Returns the system context for scoped records.
 * `export_user_data()`: Exports trainer assignment history and report access roles.
 * `delete_data_for_user()`: Anonymizes trainer records and removes personal scoping entries.
-
----
-
-## 9. Early Warning / At-Risk Architecture (V1 Scope Boundary)
-
-* **Definition:** A trainee is evaluated as *At-Risk* if:
-  1. `inactivity_days >= 14` in an active run, OR
-  2. `progress_pct < 30%` while run time elapsed $> 50\%$.
-* **Execution:** Computed on-demand via `\local_adminreport\analytics\early_warning::get_summary()`.
-* **Privacy & Cache Safety:** Individual learner names are **never stored in MUC**. The dashboard displays an aggregate summary badge. The individual list modal requires `local/adminreport:viewtrainees` and streams live with sesskey verification.
 
 ---
 
