@@ -1,0 +1,84 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_adminreport/operational_table
+
+    Operational schedule table component for local_adminreport dashboard.
+}}
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="mb-0 fw-bold text-dark">
+            <i class="fa fa-table me-2 text-primary" aria-hidden="true"></i>
+            {{#str}} operational_schedule, local_adminreport {{/str}}
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm" style="max-width: 250px;">
+                <span class="input-group-text bg-light border-end-0">
+                    <i class="fa fa-search text-muted" aria-hidden="true"></i>
+                </span>
+                <input type="text" id="table-search-input" class="form-control form-control-sm border-start-0" placeholder="{{#str}} search {{/str}}...">
+            </div>
+            <a href="{{export_url}}" class="btn btn-sm btn-outline-success">
+                <i class="fa fa-file-excel-o me-1" aria-hidden="true"></i>
+                {{#str}} export_excel, local_adminreport {{/str}}
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0" id="operational-runs-table">
+                <thead class="table-light fs-7">
+                    <tr>
+                        <th scope="col">{{#str}} run_code, local_adminreport {{/str}}</th>
+                        <th scope="col">{{#str}} course {{/str}}</th>
+                        <th scope="col">{{#str}} organization, local_adminreport {{/str}}</th>
+                        <th scope="col">{{#str}} program_type, local_adminreport {{/str}}</th>
+                        <th scope="col">{{#str}} location, local_adminreport {{/str}}</th>
+                        <th scope="col">{{#str}} dates, local_adminreport {{/str}}</th>
+                        <th scope="col">{{#str}} classroom, local_adminreport {{/str}}</th>
+                        <th scope="col">{{#str}} trainer, local_adminreport {{/str}}</th>
+                        <th scope="col" class="text-center">{{#str}} trainees_count, local_adminreport {{/str}}</th>
+                        <th scope="col">{{#str}} status {{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody class="fs-7">
+                    {{#runs}}
+                    <tr>
+                        <td><strong>{{run_code}}</strong></td>
+                        <td><a href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}">{{coursename}}</a></td>
+                        <td>{{orgname}}</td>
+                        <td>{{typename}}</td>
+                        <td>{{locname}}</td>
+                        <td>{{startdate}} - {{enddate}}</td>
+                        <td>{{classroom}}</td>
+                        <td>{{trainer_name}}</td>
+                        <td class="text-center"><span class="badge bg-light text-dark">{{participants}}</span></td>
+                        <td><span class="badge {{badge_class}}">{{status_label}}</span></td>
+                    </tr>
+                    {{/runs}}
+                    {{^runs}}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted p-4">
+                            {{#str}} no_runs_found, local_adminreport {{/str}}
+                        </td>
+                    </tr>
+                    {{/runs}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

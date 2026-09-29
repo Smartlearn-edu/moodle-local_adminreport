@@ -1,0 +1,103 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_adminreport/kpi_cards
+
+    Executive KPI Cards component for local_adminreport dashboard.
+}}
+<div class="row g-3 mb-4" id="kpi-cards-row">
+    <!-- Card 1: Runs Delivered -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card-runs p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <span class="kpi-title">{{#str}} metric_runs, local_adminreport {{/str}}</span>
+                <span class="badge bg-primary bg-opacity-10 text-primary fs-7">
+                    <i class="fa fa-calendar-check-o" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div class="kpi-value" id="kpi-runs-count">{{metrics.runs_count}}</div>
+            <div class="mt-2">
+                <span class="kpi-badge kpi-badge-ytd">
+                    <i class="fa fa-line-chart" aria-hidden="true"></i>
+                    {{#str}} ytd, local_adminreport {{/str}}: <span id="kpi-ytd-runs">{{ytd_metrics.runs_count}}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Trainees (Participations) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card-trainees p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <span class="kpi-title">{{#str}} metric_trainees, local_adminreport {{/str}}</span>
+                <span class="badge bg-success bg-opacity-10 text-success fs-7">
+                    <i class="fa fa-users" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div class="kpi-value" id="kpi-trainees-count">{{metrics.participations_count}}</div>
+            <div class="mt-2">
+                <span class="kpi-badge kpi-badge-ytd">
+                    <i class="fa fa-line-chart" aria-hidden="true"></i>
+                    {{#str}} ytd, local_adminreport {{/str}}: <span id="kpi-ytd-trainees">{{ytd_metrics.participations_count}}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Training Hours -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card-hours p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <span class="kpi-title">{{#str}} metric_training_hours, local_adminreport {{/str}}</span>
+                <span class="badge bg-indigo bg-opacity-10 text-indigo fs-7">
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div class="kpi-value" id="kpi-hours-count">{{metrics.total_training_hours}}</div>
+            <div class="mt-2">
+                <span class="kpi-badge kpi-badge-ytd">
+                    <i class="fa fa-line-chart" aria-hidden="true"></i>
+                    {{#str}} ytd, local_adminreport {{/str}}: <span id="kpi-ytd-hours">{{ytd_metrics.total_training_hours}}</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Completion Rate & Average Grade -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card-completion p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <span class="kpi-title">{{#str}} metric_completion_and_grade, local_adminreport {{/str}}</span>
+                <span class="badge bg-info bg-opacity-10 text-info fs-7">
+                    <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div class="d-flex align-items-baseline gap-2">
+                <div class="kpi-value text-teal" id="kpi-completion-rate">{{metrics.completion_rate}}%</div>
+                <div class="text-muted fs-7">
+                    ({{metrics.completions_count}} {{#str}} completed_trainees, local_adminreport {{/str}})
+                </div>
+            </div>
+            <div class="mt-2">
+                <span class="kpi-badge kpi-badge-ytd">
+                    <i class="fa fa-star-half-o" aria-hidden="true"></i>
+                    {{#str}} avg_grade, local_adminreport {{/str}}: <span id="kpi-avg-grade">{{metrics.avg_grade}}%</span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

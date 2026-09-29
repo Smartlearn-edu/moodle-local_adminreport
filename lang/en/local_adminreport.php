@@ -123,3 +123,47 @@ $string['trainee_masked'] = 'Trainee #{$a}';
 $string['unspecified'] = 'Unspecified';
 $string['never'] = 'Never';
 $string['total_at_risk'] = 'Total At-Risk Trainees';
+
+// Dashboard & Settings strings.
+$string['dashboard_subtitle'] = 'Executive Overview, Operational Schedules, and Multi-Period Intelligence';
+$string['org_resolution_mode_desc'] = 'Select how organizations/companies are attributed: via course categories, user profile custom field (CompanyName), or smart hybrid distribution.';
+$string['root_category_desc'] = 'Restrict reporting and course auto-discovery to this parent category and its descendants.';
+$string['workweek_mode_desc'] = 'Define the working days for daily training hours calculation.';
+$string['workweek_sun_thu'] = 'Sunday to Thursday (Saudi Standard)';
+$string['workweek_mon_fri'] = 'Monday to Friday (International Standard)';
+$string['workweek_all_days'] = 'All 7 Days (Continuous Operation)';
+$string['watermark_status'] = 'Warehouse Watermark';
+$string['watermark_status_desc'] = 'Last closed day aggregated into the historical warehouse: {$a}. Intraday tier computes live facts thereafter.';
+
+// Period Tabs & Toolbar.
+$string['period_week'] = 'Weekly Schedule';
+$string['period_month'] = 'Monthly View';
+$string['period_annual'] = 'Annual Cumulative';
+$string['period_custom'] = 'Custom Date Range';
+$string['print'] = 'Print Executive Report';
+$string['apply_filters'] = 'Apply Filter';
+$string['reset_filters'] = 'Reset Filters';
+$string['all_organizations'] = 'All Organizations';
+$string['all_program_types'] = 'All Program Classifications';
+$string['all_locations'] = 'All Locations';
+$string['at_risk_alert_msg'] = 'Identified {$a} learner(s) requiring academic intervention due to prolonged inactivity or failing grades in active runs.';
+
+// KPI Cards.
+$string['metric_runs'] = 'Delivered Programs';
+$string['metric_trainees'] = 'Trainees (Participations)';
+$string['metric_training_hours'] = 'Delivered Training Hours';
+$string['metric_completion_and_grade'] = 'Completion & Performance';
+$string['ytd'] = 'YTD';
+$string['completed_trainees'] = 'Completed';
+$string['avg_grade'] = 'Avg Grade';
+
+// Charts.
+$string['chart_locations_title'] = 'Trainee Distribution by Branch / Location';
+$string['chart_classifications_title'] = 'Delivered Programs by Classification';
+$string['chart_trends_title'] = 'Historical Trajectory (Last 6 Months)';
+
+// Operational Table.
+$string['operational_schedule'] = 'Operational Training Schedule';
+$string['export_excel'] = 'Export to Excel';
+$string['trainees_count'] = 'Trainees';
+$string['no_runs_found'] = 'No training program runs found matching the selected criteria.';

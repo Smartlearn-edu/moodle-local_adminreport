@@ -1,0 +1,200 @@
+/* local_adminreport - Management Intelligence & Executive Reports Styles */
+
+/* -------------------------------------------------------------
+   Dashboard Container & Toolbar
+   ------------------------------------------------------------- */
+.adminreport-dashboard-container {
+    font-family: inherit;
+    position: relative;
+}
+
+.adminreport-header-card {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.adminreport-filter-bar {
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* -------------------------------------------------------------
+   Executive KPI Cards
+   ------------------------------------------------------------- */
+.kpi-card {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.kpi-card-runs::before { background-color: #2563eb; }
+.kpi-card-trainees::before { background-color: #059669; }
+.kpi-card-hours::before { background-color: #4f46e5; }
+.kpi-card-completion::before { background-color: #0d9488; }
+
+.kpi-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.kpi-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.kpi-badge-ytd {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+/* -------------------------------------------------------------
+   Chart Containers
+   ------------------------------------------------------------- */
+.chart-card {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+
+.chart-card-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.chart-card-body {
+    padding: 1rem;
+}
+
+/* -------------------------------------------------------------
+   Early Warning Alert Banner
+   ------------------------------------------------------------- */
+.alert-warning-executive {
+    background-color: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-inline-start: 4px solid #f59e0b;
+    color: #92400e;
+    border-radius: 0.5rem;
+}
+
+/* -------------------------------------------------------------
+   Loading Spinner Overlay
+   ------------------------------------------------------------- */
+#dashboard-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.75);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.75rem;
+    backdrop-filter: blur(2px);
+}
+
+/* -------------------------------------------------------------
+   Executive Print Styling (@media print)
+   ------------------------------------------------------------- */
+@media print {
+    /* Hide navigational and non-essential UI */
+    #page-header,
+    #nav-drawer,
+    .nav-tabs,
+    .period-btn-group,
+    .adminreport-filter-bar,
+    #btn-print-dashboard,
+    .btn,
+    .pagination,
+    #dashboard-loading-overlay,
+    .breadcrumb,
+    #page-footer {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .adminreport-dashboard-container {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .kpi-card,
+    .chart-card {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+
+    .table td,
+    .table th {
+        border: 1px solid #cbd5e1 !important;
+        padding: 4px 8px !important;
+        font-size: 9pt !important;
+    }
+
+    .table tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Print color accuracy */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

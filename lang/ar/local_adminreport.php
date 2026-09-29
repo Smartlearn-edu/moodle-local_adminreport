@@ -123,3 +123,47 @@ $string['trainee_masked'] = 'متدرب #{$a}';
 $string['unspecified'] = 'غير محدد';
 $string['never'] = 'أبداً';
 $string['total_at_risk'] = 'إجمالي المتدربين المتعثرين';
+
+// Dashboard & Settings strings.
+$string['dashboard_subtitle'] = 'نظرة تنفيذية شاملة، الجدولة التشغيلية، ومؤشرات الأداء متعددة الفترات';
+$string['org_resolution_mode_desc'] = 'حدد آلية احتساب وتوزيع الجهات والشركات المستفيدة: عبر تصنيفات المقررات، أو حقل الملف الشخصي (اسم الجهة)، أو النمط الهجين الذكي.';
+$string['root_category_desc'] = 'حصر التقارير والاكتشاف التلقائي للدورات ضمن هذا التصنيف الرئيسي وتصنيفاته الفرعية.';
+$string['workweek_mode_desc'] = 'تحديد أيام العمل المعتمدة لاحتساب ساعات التدريب المنفذة.';
+$string['workweek_sun_thu'] = 'الأحد إلى الخميس (المعيار السعودي)';
+$string['workweek_mon_fri'] = 'الإثنين إلى الجمعة (المعيار الدولي)';
+$string['workweek_all_days'] = 'كافة أيام الأسبوع (تشغيل مستمر 7 أيام)';
+$string['watermark_status'] = 'العلامة الزمنية لمستودع البيانات';
+$string['watermark_status_desc'] = 'آخر يوم مكتمل ومُجمع في مستودع البيانات التاريخي: {$a}. يتم احتساب البيانات اللحظية ديناميكياً لما بعد هذا التاريخ.';
+
+// Period Tabs & Toolbar.
+$string['period_week'] = 'الجدول الأسبوعي';
+$string['period_month'] = 'التقرير الشهري';
+$string['period_annual'] = 'التراكمي السنوي';
+$string['period_custom'] = 'فترة مخصصة';
+$string['print'] = 'طباعة التقرير التنفيذي';
+$string['apply_filters'] = 'تطبيق الفلترة';
+$string['reset_filters'] = 'إعادة ضبط الفلاتر';
+$string['all_organizations'] = 'كافة الجهات المستفيدة';
+$string['all_program_types'] = 'كافة تصنيفات البرامج';
+$string['all_locations'] = 'كافة المواقع والفروع';
+$string['at_risk_alert_msg'] = 'تم رصد {$a} متدرب(اً) بحاجة إلى تدخل ومتابعة أكاديمية نظراً للانقطاع أو تدني نسب التحصيل في الدورات الجارية.';
+
+// KPI Cards.
+$string['metric_runs'] = 'البرامج المنفذة';
+$string['metric_trainees'] = 'عدد المتدربين (مشاركات)';
+$string['metric_training_hours'] = 'ساعات التدريب المنفذة';
+$string['metric_completion_and_grade'] = 'نسبة الإنجاز ومستوى التحصيل';
+$string['ytd'] = 'التراكمي السنوي';
+$string['completed_trainees'] = 'منجز';
+$string['avg_grade'] = 'متوسط الدرجات';
+
+// Charts.
+$string['chart_locations_title'] = 'توزيع المتدربين حسب الفروع والمواقع';
+$string['chart_classifications_title'] = 'تصنيف البرامج التدريبية المنفذة';
+$string['chart_trends_title'] = 'المسار الزمني التاريخي (آخر 6 أشهر)';
+
+// Operational Table.
+$string['operational_schedule'] = 'الجدول التشغيلي للبرامج التدريبية';
+$string['export_excel'] = 'تصدير إلى إكسل';
+$string['trainees_count'] = 'المتدربون';
+$string['no_runs_found'] = 'لا توجد دورات تدريبية مطابقة لمعايير البحث المحددة.';
