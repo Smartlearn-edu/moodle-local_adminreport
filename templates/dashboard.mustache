@@ -37,16 +37,16 @@
         <div class="d-flex flex-wrap align-items-center gap-2">
             <!-- Period Tabs -->
             <div class="btn-group period-btn-group" role="group">
-                <button type="button" class="btn btn-sm btn-primary active period-btn" data-period="week">
+                <a href="{{{period_week_url}}}" class="btn btn-sm {{#is_period_week}}btn-primary active{{/is_period_week}}{{^is_period_week}}btn-outline-primary{{/is_period_week}} period-btn" data-period="week">
                     {{#str}} period_week, local_adminreport {{/str}}
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-primary period-btn" data-period="month">
+                </a>
+                <a href="{{{period_month_url}}}" class="btn btn-sm {{#is_period_month}}btn-primary active{{/is_period_month}}{{^is_period_month}}btn-outline-primary{{/is_period_month}} period-btn" data-period="month">
                     {{#str}} period_month, local_adminreport {{/str}}
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-primary period-btn" data-period="annual">
+                </a>
+                <a href="{{{period_annual_url}}}" class="btn btn-sm {{#is_period_annual}}btn-primary active{{/is_period_annual}}{{^is_period_annual}}btn-outline-primary{{/is_period_annual}} period-btn" data-period="annual">
                     {{#str}} period_annual, local_adminreport {{/str}}
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-primary period-btn" data-period="custom">
+                </a>
+                <button type="button" class="btn btn-sm {{#is_period_custom}}btn-primary active{{/is_period_custom}}{{^is_period_custom}}btn-outline-primary{{/is_period_custom}} period-btn" data-period="custom" id="btn-custom-period">
                     {{#str}} period_custom, local_adminreport {{/str}}
                 </button>
             </div>
@@ -67,23 +67,25 @@
         </div>
     </div>
 
-    <!-- Custom Date Controls (Hidden by default) -->
-    <div class="card p-3 mb-4 bg-light border-0 shadow-sm d-none" id="custom-date-controls">
-        <div class="row g-2 align-items-end">
+    <!-- Custom Date Controls (Hidden by default unless custom period) -->
+    <div class="card p-3 mb-4 bg-light border-0 shadow-sm {{^is_period_custom}}d-none{{/is_period_custom}}" id="custom-date-controls">
+        <form method="get" action="{{{config.wwwroot}}}/local/adminreport/index.php" class="row g-2 align-items-end">
+            <input type="hidden" name="period" value="custom">
+            <input type="hidden" name="tab" id="custom-form-tab" value="{{active_tab}}">
             <div class="col-12 col-md-4">
                 <label for="custom-start-date" class="form-label small fw-bold">{{#str}} startdate {{/str}}</label>
-                <input type="date" id="custom-start-date" class="form-control form-control-sm">
+                <input type="date" name="start_date_input" id="custom-start-date" class="form-control form-control-sm">
             </div>
             <div class="col-12 col-md-4">
                 <label for="custom-end-date" class="form-label small fw-bold">{{#str}} enddate {{/str}}</label>
-                <input type="date" id="custom-end-date" class="form-control form-control-sm">
+                <input type="date" name="end_date_input" id="custom-end-date" class="form-control form-control-sm">
             </div>
             <div class="col-12 col-md-4">
-                <button type="button" class="btn btn-sm btn-primary w-100" id="apply-custom-dates">
+                <button type="submit" class="btn btn-sm btn-primary w-100" id="apply-custom-dates">
                     {{#str}} apply_filters, local_adminreport {{/str}}
                 </button>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Left-Pane Navigation & Content Layout -->
@@ -91,19 +93,19 @@
         <!-- Left Pane Navigation (Sidebar) -->
         <div class="col-12 col-lg-3 col-xl-2 mb-3">
             <div class="nav flex-column nav-pills executive-left-nav shadow-sm bg-white p-2 rounded" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button class="nav-link active text-start py-3 px-3 mb-2" id="v-pills-plans-tab" data-bs-toggle="pill" data-bs-target="#v-pills-plans" type="button" role="tab" aria-controls="v-pills-plans" aria-selected="true">
+                <button class="nav-link {{#is_tab_plans}}active{{/is_tab_plans}} text-start py-3 px-3 mb-2" id="v-pills-plans-tab" data-tab-name="plans" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-plans" data-target="#v-pills-plans" type="button" role="tab" aria-controls="v-pills-plans" aria-selected="{{#is_tab_plans}}true{{/is_tab_plans}}{{^is_tab_plans}}false{{/is_tab_plans}}">
                     <i class="fa fa-calendar-check-o me-2" aria-hidden="true"></i>
                     {{#str}} nav_weekly_plans, local_adminreport {{/str}}
                 </button>
-                <button class="nav-link text-start py-3 px-3 mb-2" id="v-pills-delivered-tab" data-bs-toggle="pill" data-bs-target="#v-pills-delivered" type="button" role="tab" aria-controls="v-pills-delivered" aria-selected="false">
+                <button class="nav-link {{#is_tab_delivered}}active{{/is_tab_delivered}} text-start py-3 px-3 mb-2" id="v-pills-delivered-tab" data-tab-name="delivered" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-delivered" data-target="#v-pills-delivered" type="button" role="tab" aria-controls="v-pills-delivered" aria-selected="{{#is_tab_delivered}}true{{/is_tab_delivered}}{{^is_tab_delivered}}false{{/is_tab_delivered}}">
                     <i class="fa fa-graduation-cap me-2" aria-hidden="true"></i>
                     {{#str}} nav_delivered_programs, local_adminreport {{/str}}
                 </button>
-                <button class="nav-link text-start py-3 px-3 mb-2" id="v-pills-trainees-tab" data-bs-toggle="pill" data-bs-target="#v-pills-trainees" type="button" role="tab" aria-controls="v-pills-trainees" aria-selected="false">
+                <button class="nav-link {{#is_tab_trainees}}active{{/is_tab_trainees}} text-start py-3 px-3 mb-2" id="v-pills-trainees-tab" data-tab-name="trainees" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-trainees" data-target="#v-pills-trainees" type="button" role="tab" aria-controls="v-pills-trainees" aria-selected="{{#is_tab_trainees}}true{{/is_tab_trainees}}{{^is_tab_trainees}}false{{/is_tab_trainees}}">
                     <i class="fa fa-users me-2" aria-hidden="true"></i>
                     {{#str}} nav_trainees_reports, local_adminreport {{/str}}
                 </button>
-                <button class="nav-link text-start py-3 px-3" id="v-pills-management-tab" data-bs-toggle="pill" data-bs-target="#v-pills-management" type="button" role="tab" aria-controls="v-pills-management" aria-selected="false">
+                <button class="nav-link {{#is_tab_management}}active{{/is_tab_management}} text-start py-3 px-3" id="v-pills-management-tab" data-tab-name="management" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-management" data-target="#v-pills-management" type="button" role="tab" aria-controls="v-pills-management" aria-selected="{{#is_tab_management}}true{{/is_tab_management}}{{^is_tab_management}}false{{/is_tab_management}}">
                     <i class="fa fa-cogs me-2" aria-hidden="true"></i>
                     {{#str}} nav_management, local_adminreport {{/str}}
                 </button>
@@ -114,22 +116,22 @@
         <div class="col-12 col-lg-9 col-xl-10">
             <div class="tab-content" id="v-pills-tabContent">
                 <!-- Pane 1: Weekly Plans (Slides 2, 3, 4) -->
-                <div class="tab-pane fade show active" id="v-pills-plans" role="tabpanel" aria-labelledby="v-pills-plans-tab" tabindex="0">
+                <div class="tab-pane fade {{#is_tab_plans}}show active{{/is_tab_plans}}" id="v-pills-plans" role="tabpanel" aria-labelledby="v-pills-plans-tab" tabindex="0">
                     {{> local_adminreport/weekly_plans }}
                 </div>
 
                 <!-- Pane 2: Delivered Programs (Slides 5, 6) -->
-                <div class="tab-pane fade" id="v-pills-delivered" role="tabpanel" aria-labelledby="v-pills-delivered-tab" tabindex="0">
+                <div class="tab-pane fade {{#is_tab_delivered}}show active{{/is_tab_delivered}}" id="v-pills-delivered" role="tabpanel" aria-labelledby="v-pills-delivered-tab" tabindex="0">
                     {{> local_adminreport/delivered_programs }}
                 </div>
 
                 <!-- Pane 3: Trainees Reports -->
-                <div class="tab-pane fade" id="v-pills-trainees" role="tabpanel" aria-labelledby="v-pills-trainees-tab" tabindex="0">
+                <div class="tab-pane fade {{#is_tab_trainees}}show active{{/is_tab_trainees}}" id="v-pills-trainees" role="tabpanel" aria-labelledby="v-pills-trainees-tab" tabindex="0">
                     {{> local_adminreport/trainees_pane }}
                 </div>
 
                 <!-- Pane 4: Management & Import -->
-                <div class="tab-pane fade" id="v-pills-management" role="tabpanel" aria-labelledby="v-pills-management-tab" tabindex="0">
+                <div class="tab-pane fade {{#is_tab_management}}show active{{/is_tab_management}}" id="v-pills-management" role="tabpanel" aria-labelledby="v-pills-management-tab" tabindex="0">
                     {{> local_adminreport/management_pane }}
                 </div>
             </div>

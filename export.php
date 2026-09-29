@@ -35,8 +35,8 @@ if (!has_capability('local/adminreport:export', $context)) {
 $table     = optional_param('table', 'plans_schedule', PARAM_ALPHAEXT);
 $format    = optional_param('format', 'excel', PARAM_ALPHA);
 $period    = optional_param('period', 'week', PARAM_ALPHA);
-$startdate = optional_param('start_date', 0, PARAM_INT);
-$enddate   = optional_param('end_date', 0, PARAM_INT);
+$startdate = optional_param('start_date', optional_param('start', 0, PARAM_INT), PARAM_INT);
+$enddate   = optional_param('end_date', optional_param('end', 0, PARAM_INT), PARAM_INT);
 $orgdimid  = optional_param('org_dim_id', 0, PARAM_INT);
 $typedimid = optional_param('type_dim_id', 0, PARAM_INT);
 $locdimid  = optional_param('loc_dim_id', 0, PARAM_INT);

@@ -167,3 +167,82 @@ $string['operational_schedule'] = 'الجدول التشغيلي للبرامج 
 $string['export_excel'] = 'تصدير إلى إكسل';
 $string['trainees_count'] = 'المتدربون';
 $string['no_runs_found'] = 'لا توجد دورات تدريبية مطابقة لمعايير البحث المحددة.';
+
+// Executive Left-Pane & SWA Presentation Strings.
+$string['nav_weekly_plans'] = 'خطط التدريب الأسبوعي';
+$string['nav_delivered_programs'] = 'البرامج التدريبية المنجزة';
+$string['nav_trainees_reports'] = 'تقارير المتدربين';
+$string['nav_management'] = 'إدارة الدورات واستيراد الجداول';
+
+$string['weekly_schedule_title'] = 'جدول البرامج والدورات الأسبوعية';
+$string['course_name'] = 'اسم البرنامج / الدورة';
+$string['code_no'] = 'الرمز';
+$string['duration'] = 'المدة';
+$string['trainees_number'] = 'عدد المتدربين';
+$string['daily_time'] = 'التوقيت اليومي';
+$string['break_time'] = 'فترة الاستراحة';
+$string['status'] = 'الحالة';
+$string['plans_by_entity_title'] = 'خطة التدريب حسب الجهة المستفيدة ونوع البرنامج';
+$string['entity'] = 'الجهة المستفيدة';
+$string['execution_location'] = 'مقر التنفيذ';
+$string['programs_count'] = 'عدد البرامج';
+$string['groups_count'] = 'عدد المجموعات';
+$string['total'] = 'الإجمالي';
+$string['regional_branches_title'] = 'توزيع البرامج حسب الفروع والمراكز الإقليمية';
+$string['branch'] = 'الفرع / المركز';
+$string['courses_count'] = 'عدد الدورات';
+$string['no_data_available'] = 'لا توجد بيانات متاحة حالياً.';
+
+$string['delivered_programs_title'] = 'الدورات والبرامج المنجزة';
+$string['period_from_to'] = 'من {$a->from} إلى {$a->to}';
+$string['program_definitions_title'] = 'التعريف المعتمد للبرامج والدورات';
+$string['def_dev_title'] = 'دورة تطويرية';
+$string['def_dev_desc'] = 'برنامج تدريبي قصير المدى يهدف إلى إكساب وتطوير مهارات محددة (يوم إلى أسبوعين).';
+$string['def_qual_title'] = 'دورة تأهيلية';
+$string['def_qual_desc'] = 'دورة تدريبية متخصصة تؤهل المتدرب للحصول على شهادات مهنية أو اجتياز متطلبات محددة.';
+$string['def_assist_dip_title'] = 'دبلوم مشارك';
+$string['def_assist_dip_desc'] = 'برنامج تدريبي أكاديمي ومهني متوسط المدى.';
+$string['def_qual_prog_title'] = 'برنامج تأهيلي';
+$string['def_qual_prog_desc'] = 'حزمة برامج تدريبية متكاملة لتأهيل الكوادر الفنية والقيادية.';
+$string['def_dip_prog_title'] = 'دبلوم تدريبي';
+$string['def_dip_prog_desc'] = 'برنامج دبلوم تطبيقي معتمد يمتد لعدة فصول تدريبية لتخريج كوادر تخصصية.';
+$string['trainee'] = 'متدرب';
+$string['trainees'] = 'متدربين';
+$string['programs'] = 'برامج';
+$string['sectors_summary_title'] = 'تصنيف البرامج والمتدربين حسب القطاعات';
+$string['corporate_clients_detail_title'] = 'تفاصيل التدريب للجهات والشركات المستفيدة';
+$string['beneficiary_client'] = 'الجهة / الشركة المستفيدة';
+$string['annual_trajectory_title'] = 'المسار التراكمي السنوي للبرامج المنجزة';
+$string['month'] = 'الشهر';
+$string['monthly_delivered'] = 'المنجز خلال الشهر';
+$string['cumulative_trajectory'] = 'المسار التراكمي';
+$string['cumulative_programs'] = 'تراكمي البرامج';
+$string['cumulative_trainees'] = 'تراكمي المتدربين';
+$string['strategic_partners_title'] = 'الشركاء الاستراتيجيون والبرامج المشتركة المستمرة';
+
+$string['chart_programs_by_type_title'] = 'نسبة البرامج حسب التصنيف';
+$string['chart_trainees_by_type_title'] = 'نسبة المتدربين حسب التصنيف';
+$string['chart_programs_by_sector_title'] = 'نسبة البرامج حسب القطاع';
+$string['chart_trainees_by_sector_title'] = 'نسبة المتدربين حسب القطاع';
+
+$string['trainees_report_title'] = 'سجل وبيانات المتدربين والمتابعة الأكاديمية';
+$string['trainee_name'] = 'اسم المتدرب';
+$string['company'] = 'جهة العمل / الشركة';
+$string['no_trainees_found'] = 'لا توجد بيانات متدربين مطابقة للبحث.';
+
+$string['sync_courses_title'] = 'المزامنة التلقائية للمقررات';
+$string['sync_courses_desc'] = 'استكشاف المقررات الجديدة وإنشاء دورات تشغيلية لها';
+$string['sync_courses_explanation'] = 'يقوم النظام بمسح تصنيفات المقررات في مودل واكتشاف البرامج الجديدة لربطها بجدول الدورات التشغيلية تلقائياً.';
+$string['sync_courses_btn'] = 'بدء المزامنة التلقائية الآن';
+$string['courses_synced_success'] = 'تمت المزامنة واكتشاف {$a} دورة/برنامج جديد بنجاح.';
+
+$string['runs_management_title'] = 'إدارة الدورات والمواعيد';
+$string['runs_management_desc'] = 'تعديل بيانات القاعات والمدربين وحالات البرامج';
+$string['runs_management_explanation'] = 'شاشة إدارة تفصيلية تمكن المشرفين من تعديل توقيت البرامج، القاعات، المدربين، وإلغاء أو استئناف الدورات.';
+$string['runs_manage_btn'] = 'فتح شاشة إدارة الدورات';
+
+$string['import_schedule_title'] = 'استيراد جدول البرامج';
+$string['import_schedule_desc'] = 'رفع جدول التدريب الأسبوعي أو السنوي عبر ملف CSV';
+$string['import_schedule_explanation'] = 'إمكانية إدخال واستيراد الجداول التدريبية وقوائم البرامج دفعة واحدة بكل سهولة عبر ملفات CSV.';
+$string['import_csv_btn'] = 'استيراد جدول جديد';
+

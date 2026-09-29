@@ -142,6 +142,53 @@
 }
 
 /* -------------------------------------------------------------
+   Executive Left-Pane Navigation & Modern Cards
+   ------------------------------------------------------------- */
+.executive-left-nav .nav-link {
+    border-radius: 0.5rem;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+    border-inline-start: 4px solid transparent;
+}
+
+.executive-left-nav .nav-link:hover {
+    background-color: #f1f5f9;
+    color: #1e293b;
+}
+
+.executive-left-nav .nav-link.active {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border-inline-start: 4px solid #0284c7;
+}
+
+.definition-callout-card {
+    background-color: #f8fafc;
+    border-inline-start: 4px solid #3b82f6 !important;
+}
+
+.executive-card {
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+}
+
+.executive-table {
+    font-size: 0.875rem;
+}
+
+.executive-table th {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.fs-7 {
+    font-size: 0.825rem !important;
+}
+
+/* -------------------------------------------------------------
    Executive Print Styling (@media print)
    ------------------------------------------------------------- */
 @media print {
@@ -156,8 +203,23 @@
     .pagination,
     #dashboard-loading-overlay,
     .breadcrumb,
-    #page-footer {
+    #page-footer,
+    .executive-left-nav,
+    #schedule-search-input,
+    #trainees-search-input,
+    .input-group,
+    #custom-date-controls {
         display: none !important;
+    }
+
+    .col-lg-3, .col-xl-2 {
+        display: none !important;
+    }
+
+    .col-lg-9, .col-xl-10 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
     }
 
     body {
@@ -175,7 +237,8 @@
     }
 
     .kpi-card,
-    .chart-card {
+    .chart-card,
+    .executive-card {
         box-shadow: none !important;
         border: 1px solid #cbd5e1 !important;
         break-inside: avoid;
@@ -205,3 +268,4 @@
         print-color-adjust: exact !important;
     }
 }
+

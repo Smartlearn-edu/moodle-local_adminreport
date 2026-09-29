@@ -14,10 +14,10 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Interactive dashboard controller for local_adminreport.
+ * Interactive executive dashboard controller for local_adminreport.
  *
- * Dispatches AJAX requests, updates KPI cards, re-renders ApexCharts,
- * and filters the operational schedule table.
+ * Dispatches Left-Pane navigation, renders ApexCharts pie series,
+ * and handles client-side schedule and trainee filtering.
  *
  * @module     local_adminreport/dashboard
  * @copyright  2025 Mohammad Nabil <mohammad@smartlearn.education>
@@ -26,142 +26,52 @@
 define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'], function($, Ajax, Notification, Charts) {
     'use strict';
 
-    var currentPeriod = 'week';
     var isRtl = false;
+    var currentPeriod = 'week';
+    var currentTab = 'plans';
+    var deliveredPiesData = null;
 
     /**
-     * Update KPI cards with new metrics.
+     * Switch Left-Pane active tab and panel.
      *
-     * @param {Object} metrics
-     * @param {Object} ytdMetrics
+     * @param {string} targetSelector
+     * @param {string} tabName
      */
-    function updateKPICards(metrics, ytdMetrics) {
-        $('#kpi-runs-count').text(metrics.runs_count || 0);
-        $('#kpi-trainees-count').text(metrics.participations_count || 0);
-        $('#kpi-hours-count').text(metrics.total_training_hours ? metrics.total_training_hours.toLocaleString() : 0);
-        $('#kpi-completion-rate').text((metrics.completion_rate || 0) + '%');
-        $('#kpi-avg-grade').text((metrics.avg_grade || 0) + '%');
-
-        if (ytdMetrics) {
-            $('#kpi-ytd-runs').text(ytdMetrics.runs_count || 0);
-            $('#kpi-ytd-trainees').text(ytdMetrics.participations_count || 0);
-            $('#kpi-ytd-hours').text(ytdMetrics.total_training_hours ? ytdMetrics.total_training_hours.toLocaleString() : 0);
-        }
-    }
-
-    /**
-     * Update operational schedule table rows.
-     *
-     * @param {Array} runs
-     */
-    function updateRunsTable(runs) {
-        var tbody = $('#operational-runs-table tbody');
-        tbody.empty();
-
-        if (!runs || runs.length === 0) {
-            tbody.append('<tr><td colspan="10" class="text-center text-muted p-4">' +
-                (isRtl ? 'لا توجد دورات تدريبية مطابقة في هذه الفترة' : 'No matching program runs for this period') +
-                '</td></tr>');
+    function switchTab(targetSelector, tabName) {
+        if (!targetSelector) {
             return;
         }
 
-        runs.forEach(function(r) {
-            var row = $('<tr>');
-            row.append($('<td>').html('<strong>' + $('<div>').text(r.run_code).html() + '</strong>'));
-            row.append($('<td>').html('<a href="' + M.cfg.wwwroot + '/course/view.php?id=' + r.courseid + '">' +
-                $('<div>').text(r.coursename).html() + '</a>'));
-            row.append($('<td>').text(r.orgname));
-            row.append($('<td>').text(r.typename));
-            row.append($('<td>').text(r.locname));
-            row.append($('<td>').text(r.startdate + ' - ' + r.enddate));
-            row.append($('<td>').text(r.classroom));
-            row.append($('<td>').text(r.trainer_name));
-            row.append($('<td>').addClass('text-center').html('<span class="badge bg-light text-dark">' + r.participants + '</span>'));
-            row.append($('<td>').html('<span class="badge ' + r.badge_class + '">' + r.status_label + '</span>'));
-            tbody.append(row);
-        });
-    }
+        // Deactivate all nav pills and panels.
+        $('#v-pills-tab .nav-link').removeClass('active').attr('aria-selected', 'false');
+        $('.tab-content > .tab-pane').removeClass('show active');
 
-    /**
-     * Update all charts with fresh data.
-     *
-     * @param {Object} chartData
-     */
-    function updateCharts(chartData) {
-        if (!chartData) {
-            return;
+        // Activate matching pill and panel.
+        var activeBtn = $('#v-pills-tab button[data-bs-target="' + targetSelector + '"], #v-pills-tab button[data-target="' + targetSelector + '"]');
+        if (activeBtn.length) {
+            activeBtn.addClass('active').attr('aria-selected', 'true');
         }
-        try {
-            Charts.renderLocationsChart('chart-locations-container', chartData.locations, isRtl);
-        } catch (e) {
-            console.error('local_adminreport: Failed to render locations chart:', e);
-        }
-        try {
-            Charts.renderClassificationsChart('chart-classifications-container', chartData.classifications, isRtl);
-        } catch (e) {
-            console.error('local_adminreport: Failed to render classifications chart:', e);
-        }
-        try {
-            Charts.renderTrendsChart('chart-trends-container', chartData.trends, isRtl);
-        } catch (e) {
-            console.error('local_adminreport: Failed to render trends chart:', e);
-        }
-    }
+        $(targetSelector).addClass('show active');
 
-    /**
-     * Fetch report data via AJAX and refresh UI.
-     */
-    function loadReportData() {
-        var filterOrg = parseInt($('#filter-org').val(), 10) || 0;
-        var filterType = parseInt($('#filter-type').val(), 10) || 0;
-        var filterLoc = parseInt($('#filter-location').val(), 10) || 0;
+        currentTab = tabName || 'plans';
+        $('#custom-form-tab').val(currentTab);
 
-        var startDate = 0;
-        var endDate = 0;
-        if (currentPeriod === 'custom') {
-            var sVal = $('#custom-start-date').val();
-            var eVal = $('#custom-end-date').val();
-            if (sVal) {
-                startDate = Math.floor(new Date(sVal).getTime() / 1000);
+        // Update URL query state without full page reload.
+        if (window.history && window.history.replaceState) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('tab', currentTab);
+            window.history.replaceState({}, '', url.toString());
+        }
+
+        // If Delivered Programs pane is activated, render the 4 pie charts.
+        if (targetSelector === '#v-pills-delivered') {
+            if (deliveredPiesData) {
+                Charts.renderDeliveredPies(deliveredPiesData, isRtl);
             }
-            if (eVal) {
-                endDate = Math.floor(new Date(eVal).getTime() / 1000);
-            }
+            setTimeout(function() {
+                Charts.reflowAll();
+            }, 100);
         }
-
-        // Show loading spinner overlay.
-        $('#dashboard-loading-overlay').removeClass('d-none').addClass('is-active');
-
-        Ajax.call([{
-            methodname: 'local_adminreport_get_report_data',
-            args: {
-                period_type: currentPeriod,
-                start_date: startDate,
-                end_date: endDate,
-                org_dim_id: filterOrg,
-                type_dim_id: filterType,
-                loc_dim_id: filterLoc
-            }
-        }])[0].done(function(response) {
-            $('#dashboard-loading-overlay').addClass('d-none').removeClass('is-active');
-            if (response && response.data) {
-                var data = JSON.parse(response.data);
-                updateKPICards(data.metrics, data.ytd_metrics);
-                updateCharts(data.charts);
-                updateRunsTable(data.runs);
-
-                // Update early warning indicator.
-                if (data.total_at_risk > 0) {
-                    $('#early-warning-banner').removeClass('d-none');
-                    $('#early-warning-count').text(data.total_at_risk);
-                } else {
-                    $('#early-warning-banner').addClass('d-none');
-                }
-            }
-        }).fail(function(ex) {
-            $('#dashboard-loading-overlay').addClass('d-none').removeClass('is-active');
-            Notification.exception(ex);
-        });
     }
 
     return {
@@ -174,61 +84,57 @@ define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'],
             try {
                 isRtl = (config && config.isRtl) || false;
                 currentPeriod = (config && config.initialPeriod) || 'week';
+                currentTab = (config && config.initialTab) || 'plans';
 
-                // Initial render of charts from embedded server payload.
-                if (config && config.initialData && config.initialData.charts) {
-                    updateCharts(config.initialData.charts);
+                if (config && config.initialData && config.initialData.delivered_pies) {
+                    deliveredPiesData = config.initialData.delivered_pies;
                 }
 
-                // Period Tab Click.
-                $('.period-btn').on('click', function(e) {
+                // If starting on the delivered tab, render pies immediately.
+                if (currentTab === 'delivered' && deliveredPiesData) {
+                    Charts.renderDeliveredPies(deliveredPiesData, isRtl);
+                }
+
+                // Left-Pane navigation click handler.
+                $('#v-pills-tab').on('click', '.nav-link', function(e) {
                     e.preventDefault();
-                    $('.period-btn').removeClass('active btn-primary').addClass('btn-outline-primary');
-                    $(this).addClass('active btn-primary').removeClass('btn-outline-primary');
-
-                    currentPeriod = $(this).data('period');
-
-                    if (currentPeriod === 'custom') {
-                        $('#custom-date-controls').removeClass('d-none');
-                    } else {
-                        $('#custom-date-controls').addClass('d-none');
-                        loadReportData();
-                    }
+                    var target = $(this).attr('data-bs-target') || $(this).attr('data-target');
+                    var tabName = $(this).attr('data-tab-name');
+                    switchTab(target, tabName);
                 });
 
-                // Custom date inputs change.
-                $('#apply-custom-dates').on('click', function() {
-                    loadReportData();
+                // Toggle custom date range panel.
+                $('#btn-custom-period').on('click', function(e) {
+                    e.preventDefault();
+                    $('#custom-date-controls').toggleClass('d-none');
                 });
 
-                // Filter dropdowns change.
-                $('#filter-org, #filter-type, #filter-location').on('change', function() {
-                    loadReportData();
-                });
-
-                // Reset filters.
-                $('#btn-reset-filters').on('click', function() {
-                    $('#filter-org').val('0');
-                    $('#filter-type').val('0');
-                    $('#filter-location').val('0');
-                    loadReportData();
-                });
-
-                // Client-side search in operational table.
-                $('#table-search-input').on('keyup', function() {
+                // Schedule table client-side real-time search.
+                $('#schedule-search-input').on('keyup', function() {
                     var val = $(this).val().toLowerCase();
-                    $('#operational-runs-table tbody tr').filter(function() {
+                    $('#weekly-runs-table tbody tr').filter(function() {
                         $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1);
                     });
                 });
 
-                // Print button.
-                $('#btn-print-dashboard').on('click', function() {
+                // Trainees table client-side real-time search.
+                $('#trainees-search-input').on('keyup', function() {
+                    var val = $(this).val().toLowerCase();
+                    $('#trainees-report-table tbody tr').filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1);
+                    });
+                });
+
+                // Executive Print button.
+                $('#btn-print-dashboard').on('click', function(e) {
+                    e.preventDefault();
                     window.print();
                 });
+
             } catch (err) {
                 console.error('local_adminreport: Dashboard initialization error:', err);
             }
         }
     };
 });
+

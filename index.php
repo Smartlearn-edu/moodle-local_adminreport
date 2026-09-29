@@ -34,13 +34,18 @@ $PAGE->set_url(new moodle_url('/local/adminreport/index.php'));
 $PAGE->set_title(get_string('dashboard', 'local_adminreport'));
 $PAGE->set_heading(get_string('pluginname', 'local_adminreport'));
 
+$period = optional_param('period', 'week', PARAM_ALPHA);
+$start  = optional_param('start', 0, PARAM_INT);
+$end    = optional_param('end', 0, PARAM_INT);
+$tab    = optional_param('tab', 'plans', PARAM_ALPHA);
+
 // 1. Resolve user scoping and capabilities.
 $allowedorgs = \local_adminreport\analytics\tier_stitcher::get_user_allowed_orgs((int) $USER->id);
 $canmanage = has_capability('local/adminreport:manage', $context);
 $canviewtrainees = has_capability('local/adminreport:viewtrainees', $context);
 
-// 2. Fetch initial stitched report data (default preset: current week).
-$reportdata = \local_adminreport\analytics\tier_stitcher::get_report_data('week', 0, 0, [], (int) $USER->id);
+// 2. Fetch initial stitched report data according to requested period.
+$reportdata = \local_adminreport\analytics\tier_stitcher::get_report_data($period, $start, $end, [], (int) $USER->id);
 
 // 3. Early warning summary count.
 $atrisk = \local_adminreport\analytics\early_warning::evaluate_at_risk_trainees($allowedorgs, null, false);
@@ -81,7 +86,8 @@ $isrtl = right_to_left();
 // 5. Initialise AMD dashboard controller.
 $PAGE->requires->js_call_amd('local_adminreport/dashboard', 'init', [[
     'isRtl'         => $isrtl,
-    'initialPeriod' => 'week',
+    'initialPeriod' => $period,
+    'initialTab'    => $tab,
     'initialData'   => $reportdata,
 ]]);
 
@@ -91,10 +97,12 @@ if ($action === 'sync_courses' && confirm_sesskey()) {
     require_capability('local/adminreport:manage', $context);
     $discovered = \local_adminreport\task\auto_discover_runs::execute();
     \core\notification::success(get_string('courses_synced_success', 'local_adminreport', $discovered));
-    redirect(new moodle_url('/local/adminreport/index.php'));
+    redirect(new moodle_url('/local/adminreport/index.php', ['period' => $period, 'tab' => $tab]));
 }
 
 // 6. Assemble template data.
+$exportparams = ['period' => $period, 'start' => $start, 'end' => $end];
+
 $templatedata = [
     'config'                   => [
         'wwwroot' => $CFG->wwwroot,
@@ -102,6 +110,18 @@ $templatedata = [
     'period_type'              => $reportdata['period_type'],
     'start_date_formatted'     => $reportdata['start_date_formatted'],
     'end_date_formatted'       => $reportdata['end_date_formatted'],
+    'is_period_week'           => ($period === 'week'),
+    'is_period_month'          => ($period === 'month'),
+    'is_period_annual'         => ($period === 'annual'),
+    'is_period_custom'         => ($period === 'custom'),
+    'period_week_url'          => (new moodle_url('/local/adminreport/index.php', ['period' => 'week', 'tab' => $tab]))->out(false),
+    'period_month_url'         => (new moodle_url('/local/adminreport/index.php', ['period' => 'month', 'tab' => $tab]))->out(false),
+    'period_annual_url'        => (new moodle_url('/local/adminreport/index.php', ['period' => 'annual', 'tab' => $tab]))->out(false),
+    'active_tab'               => $tab,
+    'is_tab_plans'             => ($tab === 'plans'),
+    'is_tab_delivered'         => ($tab === 'delivered'),
+    'is_tab_trainees'          => ($tab === 'trainees'),
+    'is_tab_management'        => ($tab === 'management'),
     'metrics'                  => $reportdata['metrics'],
     'ytd_metrics'              => $reportdata['ytd_metrics'],
     'runs'                     => $reportdata['runs'],
@@ -131,16 +151,16 @@ $templatedata = [
     'can_manage'               => $canmanage,
     'can_view_trainees'        => $canviewtrainees,
     'sesskey'                  => sesskey(),
-    'export_url_runs'          => (new moodle_url('/local/adminreport/export.php', ['table' => 'plans_schedule']))->out(false),
-    'export_url_entity'        => (new moodle_url('/local/adminreport/export.php', ['table' => 'plans_entity']))->out(false),
-    'export_url_branch'        => (new moodle_url('/local/adminreport/export.php', ['table' => 'plans_branch']))->out(false),
-    'export_url_delivered'     => (new moodle_url('/local/adminreport/export.php', ['table' => 'delivered_summary']))->out(false),
-    'export_url_corporate'     => (new moodle_url('/local/adminreport/export.php', ['table' => 'delivered_corporate']))->out(false),
-    'export_url_trajectory'    => (new moodle_url('/local/adminreport/export.php', ['table' => 'trajectory']))->out(false),
-    'export_url_trainees'      => (new moodle_url('/local/adminreport/export.php', ['table' => 'trainees']))->out(false),
+    'export_url_runs'          => (new moodle_url('/local/adminreport/export.php', array_merge(['table' => 'plans_schedule'], $exportparams)))->out(false),
+    'export_url_entity'        => (new moodle_url('/local/adminreport/export.php', array_merge(['table' => 'plans_entity'], $exportparams)))->out(false),
+    'export_url_branch'        => (new moodle_url('/local/adminreport/export.php', array_merge(['table' => 'plans_branch'], $exportparams)))->out(false),
+    'export_url_delivered'     => (new moodle_url('/local/adminreport/export.php', array_merge(['table' => 'delivered_summary'], $exportparams)))->out(false),
+    'export_url_corporate'     => (new moodle_url('/local/adminreport/export.php', array_merge(['table' => 'delivered_corporate'], $exportparams)))->out(false),
+    'export_url_trajectory'    => (new moodle_url('/local/adminreport/export.php', array_merge(['table' => 'trajectory'], $exportparams)))->out(false),
+    'export_url_trainees'      => (new moodle_url('/local/adminreport/export.php', array_merge(['table' => 'trainees'], $exportparams)))->out(false),
     'runs_manage_url'          => (new moodle_url('/local/adminreport/runs.php'))->out(false),
     'import_url'               => (new moodle_url('/local/adminreport/import.php'))->out(false),
-    'sync_courses_url'         => (new moodle_url('/local/adminreport/index.php', ['action' => 'sync_courses', 'sesskey' => sesskey()]))->out(false),
+    'sync_courses_url'         => (new moodle_url('/local/adminreport/index.php', ['action' => 'sync_courses', 'period' => $period, 'tab' => $tab, 'sesskey' => sesskey()]))->out(false),
 ];
 
 echo $OUTPUT->header();

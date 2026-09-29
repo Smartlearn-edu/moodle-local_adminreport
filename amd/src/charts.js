@@ -333,6 +333,124 @@ define(['local_adminreport/apexcharts'], function(ApexCharts) {
             } catch (err) {
                 console.error('local_adminreport: Failed to render trends chart:', err);
             }
+        },
+
+        /**
+         * Render generic Pie/Donut Chart.
+         *
+         * @param {string} elementId
+         * @param {Object} data {labels: [], series: []}
+         * @param {boolean} isRtl
+         * @param {Array} customColors
+         */
+        renderPieChart: function(elementId, data, isRtl, customColors) {
+            destroyChart(elementId);
+            var el = document.getElementById(elementId);
+            if (!el) {
+                return;
+            }
+
+            if (!data || !data.series || data.series.length === 0 || data.series.every(function(v) { return v === 0; })) {
+                el.innerHTML = '<div class="text-center text-muted p-4 fs-7">' +
+                    (isRtl ? 'لا توجد بيانات متاحة لهذا المؤشر' : 'No data available for this chart') + '</div>';
+                return;
+            }
+
+            var Apex = getApex();
+            if (!Apex) {
+                console.warn('local_adminreport: ApexCharts is not available.');
+                return;
+            }
+
+            var colors = customColors || palette;
+
+            var options = {
+                chart: {
+                    type: 'donut',
+                    height: 250,
+                    fontFamily: 'inherit',
+                    toolbar: { show: false }
+                },
+                series: data.series,
+                labels: data.labels,
+                colors: colors,
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    fontFamily: 'inherit',
+                    formatter: function(seriesName, opts) {
+                        return seriesName + ': ' + opts.w.globals.series[opts.seriesIndex];
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val) {
+                        return Math.round(val) + '%';
+                    },
+                    style: {
+                        fontSize: '11px',
+                        fontFamily: 'inherit'
+                    }
+                },
+                stroke: {
+                    width: 1,
+                    colors: ['#ffffff']
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '50%'
+                        }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val.toLocaleString();
+                        }
+                    }
+                }
+            };
+
+            try {
+                var chart = new Apex(el, options);
+                chart.render();
+                chartInstances[elementId] = chart;
+            } catch (err) {
+                console.error('local_adminreport: Failed to render pie chart [' + elementId + ']:', err);
+            }
+        },
+
+        /**
+         * Render all 4 Slide 5 Delivered Pie Charts.
+         *
+         * @param {Object} deliveredPies
+         * @param {boolean} isRtl
+         */
+        renderDeliveredPies: function(deliveredPies, isRtl) {
+            if (!deliveredPies) {
+                return;
+            }
+            this.renderPieChart('chart-programs-by-type', deliveredPies.programs_by_type, isRtl,
+                ['#2563eb', '#0d9488', '#f59e0b', '#10b981', '#64748b', '#8b5cf6']);
+            this.renderPieChart('chart-trainees-by-type', deliveredPies.trainees_by_type, isRtl,
+                ['#3b82f6', '#14b8a6', '#fbbf24', '#34d399', '#94a3b8', '#a78bfa']);
+            this.renderPieChart('chart-programs-by-sector', deliveredPies.programs_by_sector, isRtl,
+                ['#0284c7', '#059669', '#d97706', '#7c3aed', '#64748b', '#ec4899']);
+            this.renderPieChart('chart-trainees-by-sector', deliveredPies.trainees_by_sector, isRtl,
+                ['#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#94a3b8', '#f43f5e']);
+        },
+
+        /**
+         * Reflow / resize all active chart instances.
+         */
+        reflowAll: function() {
+            try {
+                window.dispatchEvent(new Event('resize'));
+            } catch (e) {
+                // Ignore reflow error
+            }
         }
     };
 });
+

@@ -167,3 +167,82 @@ $string['operational_schedule'] = 'Operational Training Schedule';
 $string['export_excel'] = 'Export to Excel';
 $string['trainees_count'] = 'Trainees';
 $string['no_runs_found'] = 'No training program runs found matching the selected criteria.';
+
+// Executive Left-Pane & SWA Presentation Strings.
+$string['nav_weekly_plans'] = 'Weekly Training Plans';
+$string['nav_delivered_programs'] = 'Delivered Training Programs';
+$string['nav_trainees_reports'] = 'Trainees Reports';
+$string['nav_management'] = 'Runs & Schedule Management';
+
+$string['weekly_schedule_title'] = 'Weekly Training Programs Schedule';
+$string['course_name'] = 'Program / Course Name';
+$string['code_no'] = 'Code No.';
+$string['duration'] = 'Duration';
+$string['trainees_number'] = 'Trainees Count';
+$string['daily_time'] = 'Daily Time';
+$string['break_time'] = 'Break Time';
+$string['status'] = 'Status';
+$string['plans_by_entity_title'] = 'Training Plan by Beneficiary Entity & Program Type';
+$string['entity'] = 'Beneficiary Entity';
+$string['execution_location'] = 'Execution Location';
+$string['programs_count'] = 'Programs Count';
+$string['groups_count'] = 'Groups Count';
+$string['total'] = 'Total';
+$string['regional_branches_title'] = 'Distribution by Regional Branches & Centers';
+$string['branch'] = 'Branch / Center';
+$string['courses_count'] = 'Courses Count';
+$string['no_data_available'] = 'No data available for this section.';
+
+$string['delivered_programs_title'] = 'Delivered Programs & Courses';
+$string['period_from_to'] = 'From {$a->from} To {$a->to}';
+$string['program_definitions_title'] = 'Approved Program Definitions';
+$string['def_dev_title'] = 'Development Course';
+$string['def_dev_desc'] = 'Short-term training program aimed at skill acquisition and enhancement (1 day to 2 weeks).';
+$string['def_qual_title'] = 'Qualifying Course';
+$string['def_qual_desc'] = 'Specialized course qualifying learners for professional certifications or specific requirements.';
+$string['def_assist_dip_title'] = 'Associate Diploma';
+$string['def_assist_dip_desc'] = 'Medium-term academic and applied professional diploma program.';
+$string['def_qual_prog_title'] = 'Qualifying Program';
+$string['def_qual_prog_desc'] = 'Integrated training pathway qualifying technical and leadership personnel.';
+$string['def_dip_prog_title'] = 'Training Diploma';
+$string['def_dip_prog_desc'] = 'Accredited applied multi-term diploma program qualifying specialized cadres.';
+$string['trainee'] = 'Trainee';
+$string['trainees'] = 'Trainees';
+$string['programs'] = 'Programs';
+$string['sectors_summary_title'] = 'Programs & Trainees by Sector';
+$string['corporate_clients_detail_title'] = 'Corporate Clients Training Details';
+$string['beneficiary_client'] = 'Beneficiary Client';
+$string['annual_trajectory_title'] = 'Annual Cumulative Trajectory of Delivered Programs';
+$string['month'] = 'Month';
+$string['monthly_delivered'] = 'Delivered in Month';
+$string['cumulative_trajectory'] = 'Cumulative Trajectory';
+$string['cumulative_programs'] = 'Cumulative Programs';
+$string['cumulative_trainees'] = 'Cumulative Trainees';
+$string['strategic_partners_title'] = 'Strategic Partners & Ongoing Collaborative Programs';
+
+$string['chart_programs_by_type_title'] = 'Programs Share by Classification';
+$string['chart_trainees_by_type_title'] = 'Trainees Share by Classification';
+$string['chart_programs_by_sector_title'] = 'Programs Share by Sector';
+$string['chart_trainees_by_sector_title'] = 'Trainees Share by Sector';
+
+$string['trainees_report_title'] = 'Trainees Roster & Academic Tracking';
+$string['trainee_name'] = 'Trainee Name';
+$string['company'] = 'Employer / Organization';
+$string['no_trainees_found'] = 'No trainees found matching criteria.';
+
+$string['sync_courses_title'] = 'Course Auto-Discovery';
+$string['sync_courses_desc'] = 'Scan courses and create operational runs automatically';
+$string['sync_courses_explanation'] = 'Automatically scans Moodle course categories and registers new operational runs linked to course syllabi.';
+$string['sync_courses_btn'] = 'Start Course Sync Now';
+$string['courses_synced_success'] = 'Course auto-discovery completed. Discovered {$a} new run(s).';
+
+$string['runs_management_title'] = 'Operational Runs Management';
+$string['runs_management_desc'] = 'Manage classrooms, trainers, schedules, and statuses';
+$string['runs_management_explanation'] = 'Detailed administrative console to modify run timing, assigned halls, trainers, and cancel or restore runs.';
+$string['runs_manage_btn'] = 'Open Runs Management';
+
+$string['import_schedule_title'] = 'Import Training Schedule';
+$string['import_schedule_desc'] = 'Bulk import weekly and annual training schedules via CSV';
+$string['import_schedule_explanation'] = 'Upload CSV spreadsheets containing schedules, classrooms, timings, and participant counts in bulk.';
+$string['import_csv_btn'] = 'Import Schedule CSV';
+
