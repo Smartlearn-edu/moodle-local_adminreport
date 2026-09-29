@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_adminreport';
-$plugin->version   = 2026092905;
+$plugin->version   = 2026092906;
 $plugin->requires  = 2024100700; // Moodle 4.5+ or 5.x.
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = 'v1.0.0-alpha';
