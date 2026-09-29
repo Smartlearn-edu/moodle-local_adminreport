@@ -85,20 +85,62 @@ $PAGE->requires->js_call_amd('local_adminreport/dashboard', 'init', [[
     'initialData'   => $reportdata,
 ]]);
 
+// Action handlers.
+$action = optional_param('action', '', PARAM_ALPHA);
+if ($action === 'sync_courses' && confirm_sesskey()) {
+    require_capability('local/adminreport:manage', $context);
+    $discovered = \local_adminreport\task\auto_discover_runs::execute();
+    \core\notification::success(get_string('courses_synced_success', 'local_adminreport', $discovered));
+    redirect(new moodle_url('/local/adminreport/index.php'));
+}
+
 // 6. Assemble template data.
 $templatedata = [
-    'config'         => [
+    'config'                   => [
         'wwwroot' => $CFG->wwwroot,
     ],
-    'metrics'        => $reportdata['metrics'],
-    'ytd_metrics'    => $reportdata['ytd_metrics'],
-    'runs'           => $reportdata['runs'],
-    'organizations'  => array_values($orgmembers),
-    'program_types'  => array_values($typemembers),
-    'locations'      => array_values($locmembers),
-    'total_at_risk'  => $totalatrisk,
-    'can_manage'     => $canmanage,
-    'export_url'     => (new moodle_url('/local/adminreport/export.php'))->out(false),
+    'period_type'              => $reportdata['period_type'],
+    'start_date_formatted'     => $reportdata['start_date_formatted'],
+    'end_date_formatted'       => $reportdata['end_date_formatted'],
+    'metrics'                  => $reportdata['metrics'],
+    'ytd_metrics'              => $reportdata['ytd_metrics'],
+    'runs'                     => $reportdata['runs'],
+    'runs_count'               => $reportdata['runs_count'],
+    'has_runs'                 => !empty($reportdata['runs']),
+    'plans_by_entity'          => $reportdata['plans_by_entity'],
+    'has_plans_by_entity'      => !empty($reportdata['plans_by_entity']['rows']),
+    'plans_by_branch'          => $reportdata['plans_by_branch'],
+    'has_plans_by_branch'      => !empty($reportdata['plans_by_branch']['rows']),
+    'delivered_classification' => $reportdata['delivered_classification'],
+    'delivered_sectors'        => $reportdata['delivered_sectors'],
+    'delivered_corporate'      => $reportdata['delivered_corporate'],
+    'has_delivered_corporate'  => !empty($reportdata['delivered_corporate']['rows']),
+    'delivered_pies'           => $reportdata['delivered_pies'],
+    'monthly_trajectory'       => $reportdata['monthly_trajectory'],
+    'has_monthly_trajectory'   => !empty($reportdata['monthly_trajectory']['rows']),
+    'strategic_partners'       => $reportdata['strategic_partners'],
+    'has_strategic_partners'   => !empty($reportdata['strategic_partners']),
+    'cumulative_summary'       => $reportdata['cumulative_summary'],
+    'trainees_report'          => $reportdata['trainees_report'],
+    'has_trainees_report'      => !empty($reportdata['trainees_report']),
+    'trainees_count'           => $reportdata['trainees_count'],
+    'organizations'            => array_values($orgmembers),
+    'program_types'            => array_values($typemembers),
+    'locations'                => array_values($locmembers),
+    'total_at_risk'            => $totalatrisk,
+    'can_manage'               => $canmanage,
+    'can_view_trainees'        => $canviewtrainees,
+    'sesskey'                  => sesskey(),
+    'export_url_runs'          => (new moodle_url('/local/adminreport/export.php', ['table' => 'plans_schedule']))->out(false),
+    'export_url_entity'        => (new moodle_url('/local/adminreport/export.php', ['table' => 'plans_entity']))->out(false),
+    'export_url_branch'        => (new moodle_url('/local/adminreport/export.php', ['table' => 'plans_branch']))->out(false),
+    'export_url_delivered'     => (new moodle_url('/local/adminreport/export.php', ['table' => 'delivered_summary']))->out(false),
+    'export_url_corporate'     => (new moodle_url('/local/adminreport/export.php', ['table' => 'delivered_corporate']))->out(false),
+    'export_url_trajectory'    => (new moodle_url('/local/adminreport/export.php', ['table' => 'trajectory']))->out(false),
+    'export_url_trainees'      => (new moodle_url('/local/adminreport/export.php', ['table' => 'trainees']))->out(false),
+    'runs_manage_url'          => (new moodle_url('/local/adminreport/runs.php'))->out(false),
+    'import_url'               => (new moodle_url('/local/adminreport/import.php'))->out(false),
+    'sync_courses_url'         => (new moodle_url('/local/adminreport/index.php', ['action' => 'sync_courses', 'sesskey' => sesskey()]))->out(false),
 ];
 
 echo $OUTPUT->header();

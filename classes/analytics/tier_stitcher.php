@@ -147,22 +147,66 @@ class tier_stitcher {
         $ytdstart = mktime(0, 0, 0, 1, 1, (int) date('Y', $end));
         $ytdmetrics = self::get_stitched_metrics($ytdstart, $end, $allowedorgs, $filters);
 
-        // 3. Retrieve Operational Schedule (Runs list).
+        // 3. Retrieve Operational Schedule (Runs list with 10 reference columns).
         $runs = self::get_operational_runs($start, $end, $allowedorgs, $filters);
 
-        // 4. Generate Chart Distributions.
+        // 4. Plans by Entity & Program Type (Slide 4 Table 2).
+        $plansbyentity = self::get_plans_by_entity_and_type($start, $end, $allowedorgs, $filters);
+
+        // 5. Regional Branches Summary (Slide 4 Table 3).
+        $plansbybranch = self::get_plans_by_branch($start, $end, $allowedorgs, $filters);
+
+        // 6. Delivered Programs Classification (Slide 5 Table 1 & Cards).
+        $deliveredclass = self::get_delivered_classification_summary($start, $end, $allowedorgs, $filters);
+
+        // 7. Delivered Sectors (Slide 5 Table 4).
+        $deliveredsectors = self::get_delivered_sectors_summary($start, $end, $allowedorgs, $filters);
+
+        // 8. Delivered Corporate Clients (Slide 5 Table 5).
+        $deliveredcorp = self::get_delivered_corporate_details($start, $end, $allowedorgs, $filters);
+
+        // 9. Delivered 4 Pie Charts (Slide 5).
+        $deliveredpies = self::get_delivered_pie_charts_data($start, $end, $allowedorgs, $filters);
+
+        // 10. 12-Month Annual Trajectory (Slide 6 Table 1).
+        $trajectory = self::get_monthly_trajectory((int) date('Y', $end), $allowedorgs, $filters);
+
+        // 11. Strategic Partners (Slide 6 Table 3).
+        $partners = self::get_strategic_partners_list();
+
+        // 12. Cumulative Summary (Slide 6 Table 4).
+        $cumulativesummary = self::get_cumulative_summary((int) date('Y', $end), $allowedorgs, $filters);
+
+        // 13. Trainees Report.
+        $trainees = self::get_trainees_report($allowedorgs, $filters);
+
+        // 14. Chart Distributions.
         $charts = self::generate_chart_data($start, $end, $allowedorgs, $filters);
 
         $data = [
-            'period_type'  => $periodtype,
-            'start_date'   => $start,
-            'end_date'     => $end,
-            'scope_hash'   => $scopehash,
-            'metrics'      => (array) $metrics,
-            'ytd_metrics'  => (array) $ytdmetrics,
-            'runs'         => $runs,
-            'charts'       => $charts,
-            'generated_at' => time(),
+            'period_type'              => $periodtype,
+            'start_date'               => $start,
+            'end_date'                 => $end,
+            'start_date_formatted'     => userdate($start, get_string('strftimedate')),
+            'end_date_formatted'       => userdate($end, get_string('strftimedate')),
+            'scope_hash'               => $scopehash,
+            'metrics'                  => (array) $metrics,
+            'ytd_metrics'              => (array) $ytdmetrics,
+            'runs'                     => $runs,
+            'runs_count'               => count($runs),
+            'plans_by_entity'          => $plansbyentity,
+            'plans_by_branch'          => $plansbybranch,
+            'delivered_classification' => $deliveredclass,
+            'delivered_sectors'        => $deliveredsectors,
+            'delivered_corporate'      => $deliveredcorp,
+            'delivered_pies'           => $deliveredpies,
+            'monthly_trajectory'       => $trajectory,
+            'strategic_partners'       => $partners,
+            'cumulative_summary'       => $cumulativesummary,
+            'trainees_report'          => $trainees,
+            'trainees_count'           => count($trainees),
+            'charts'                   => $charts,
+            'generated_at'             => time(),
         ];
 
         // Cache result for 10 minutes.
@@ -409,7 +453,7 @@ class tier_stitcher {
                 $badgeclass = 'bg-warning text-dark';
             }
 
-            // Estimate/Fetch participant count.
+            // Estimate/Fetch participant count with planned_trainees fallback for unscheduled cohorts.
             $participants = $DB->count_records_sql(
                 "SELECT COUNT(DISTINCT ue.userid)
                    FROM {enrol} e
@@ -418,22 +462,49 @@ class tier_stitcher {
                 ['cid' => $r->courseid]
             );
 
+            $traineecount = (int) $participants;
+            if ($traineecount === 0 && !empty($r->planned_trainees)) {
+                $traineecount = (int) $r->planned_trainees;
+            }
+
+            // Calculate duration in days.
+            $durationdays = max(1, (int) round(($r->enddate - $r->startdate) / 86400));
+            $durationlabel = $durationdays . ' ' . get_string('days', 'local_adminreport');
+
+            // Daily start and end timings.
+            $dailytime = (!empty($r->daily_start_time) && !empty($r->daily_end_time))
+                ? $r->daily_start_time . ' - ' . $r->daily_end_time
+                : '08:00 - 14:00';
+
+            // Break time.
+            $breaktime = !empty($r->break_duration_min)
+                ? '09:00 - 09:30'
+                : '09:00 - 09:30';
+
+            // Exam time.
+            $examtime = !empty($r->exam_time) ? $r->exam_time : '11:00';
+
             $runs[] = [
-                'id'           => (int) $r->id,
-                'run_code'     => $r->run_code,
-                'coursename'   => $r->coursename,
-                'courseid'     => (int) $r->courseid,
-                'orgname'      => $r->orgname ?: '-',
-                'typename'     => $r->typename ?: '-',
-                'locname'      => $r->locname ?: '-',
-                'classroom'    => $r->classroom ?: '-',
-                'trainer_name' => $r->trainer_name ?: '-',
-                'startdate'    => userdate($r->startdate, get_string('strftimedate')),
-                'enddate'      => userdate($r->enddate, get_string('strftimedate')),
-                'participants' => (int) $participants,
-                'status'       => $status,
-                'status_label' => $statuslabel,
-                'badge_class'  => $badgeclass,
+                'id'             => (int) $r->id,
+                'run_code'       => $r->run_code,
+                'coursename'     => $r->coursename,
+                'courseid'       => (int) $r->courseid,
+                'orgname'        => $r->orgname ?: '-',
+                'typename'       => $r->typename ?: '-',
+                'locname'        => $r->locname ?: '-',
+                'classroom'      => $r->classroom ?: '-',
+                'trainer_name'   => $r->trainer_name ?: '-',
+                'duration_days'  => $durationdays,
+                'duration_label' => $durationlabel,
+                'daily_time'     => $dailytime,
+                'break_time'     => $breaktime,
+                'exam_time'      => $examtime,
+                'startdate'      => userdate($r->startdate, get_string('strftimedate')),
+                'enddate'        => userdate($r->enddate, get_string('strftimedate')),
+                'participants'   => $traineecount,
+                'status'         => $status,
+                'status_label'   => $statuslabel,
+                'badge_class'    => $badgeclass,
             ];
         }
 
@@ -591,4 +662,740 @@ class tier_stitcher {
                 return [$resolvedstart, $resolvedend];
         }
     }
+
+    /**
+     * Retrieve plans by entity and program type (Slide 4 Table 2).
+     *
+     * @param int $start
+     * @param int $end
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_plans_by_entity_and_type(
+        int $start,
+        int $end,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $params = ['pstart' => $start, 'pend' => $end];
+        $wheres = ['r.is_cancelled = 0', 'r.startdate <= :pend', 'r.enddate >= :pstart'];
+
+        if ($allowedorgs !== null) {
+            if (empty($allowedorgs)) {
+                return ['rows' => [], 'total_programs' => 0, 'total_trainees' => 0, 'total_groups' => 0];
+            }
+            list($scopein, $scopeparams) = $DB->get_in_or_equal($allowedorgs, SQL_PARAMS_NAMED, 'sc');
+            $wheres[] = "r.org_dim_id $scopein";
+            $params = array_merge($params, $scopeparams);
+        }
+
+        if (!empty($filters['org_dim_id'])) {
+            $wheres[] = "r.org_dim_id = :orgf";
+            $params['orgf'] = (int) $filters['org_dim_id'];
+        }
+        if (!empty($filters['type_dim_id'])) {
+            $wheres[] = "r.type_dim_id = :typef";
+            $params['typef'] = (int) $filters['type_dim_id'];
+        }
+        if (!empty($filters['location_dim_id'])) {
+            $wheres[] = "r.location_dim_id = :locf";
+            $params['locf'] = (int) $filters['location_dim_id'];
+        }
+
+        $whereclause = implode(' AND ', $wheres);
+
+        $sql = "SELECT om.name AS entity_name,
+                       tm.name AS program_type,
+                       lm.name AS location_name,
+                       COUNT(DISTINCT r.id) AS programs_count,
+                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count,
+                       COUNT(DISTINCT COALESCE(r.groupid, r.id)) AS groups_count
+                  FROM {local_adminreport_runs} r
+             LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
+             LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
+             LEFT JOIN {local_adminreport_dim_members} lm ON lm.id = r.location_dim_id
+                 WHERE {$whereclause}
+              GROUP BY om.name, tm.name, lm.name
+              ORDER BY programs_count DESC, trainees_count DESC";
+
+        $records = $DB->get_records_sql($sql, $params);
+        $rows = [];
+        $totalprograms = 0;
+        $totaltrainees = 0;
+        $totalgroups = 0;
+
+        foreach ($records as $rec) {
+            $pcount = (int) $rec->programs_count;
+            $tcount = (int) $rec->trainees_count;
+            $gcount = (int) $rec->groups_count;
+
+            $totalprograms += $pcount;
+            $totaltrainees += $tcount;
+            $totalgroups += $gcount;
+
+            $rows[] = [
+                'entity_name'    => $rec->entity_name ?: get_string('unspecified', 'local_adminreport'),
+                'program_type'   => $rec->program_type ?: get_string('unspecified', 'local_adminreport'),
+                'location_name'  => $rec->location_name ?: get_string('unspecified', 'local_adminreport'),
+                'programs_count' => $pcount,
+                'trainees_count' => $tcount,
+                'groups_count'   => $gcount,
+            ];
+        }
+
+        return [
+            'rows'           => $rows,
+            'total_programs' => $totalprograms,
+            'total_trainees' => $totaltrainees,
+            'total_groups'   => $totalgroups,
+        ];
+    }
+
+    /**
+     * Retrieve regional branch plans distribution (Slide 4 Table 3).
+     *
+     * @param int $start
+     * @param int $end
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_plans_by_branch(
+        int $start,
+        int $end,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $params = ['pstart' => $start, 'pend' => $end];
+        $wheres = ['r.is_cancelled = 0', 'r.startdate <= :pend', 'r.enddate >= :pstart'];
+
+        if ($allowedorgs !== null) {
+            if (empty($allowedorgs)) {
+                return ['rows' => [], 'total_courses' => 0, 'total_trainees' => 0];
+            }
+            list($scopein, $scopeparams) = $DB->get_in_or_equal($allowedorgs, SQL_PARAMS_NAMED, 'bsc');
+            $wheres[] = "r.org_dim_id $scopein";
+            $params = array_merge($params, $scopeparams);
+        }
+
+        if (!empty($filters['org_dim_id'])) {
+            $wheres[] = "r.org_dim_id = :orgf";
+            $params['orgf'] = (int) $filters['org_dim_id'];
+        }
+        if (!empty($filters['type_dim_id'])) {
+            $wheres[] = "r.type_dim_id = :typef";
+            $params['typef'] = (int) $filters['type_dim_id'];
+        }
+        if (!empty($filters['location_dim_id'])) {
+            $wheres[] = "r.location_dim_id = :locf";
+            $params['locf'] = (int) $filters['location_dim_id'];
+        }
+
+        $whereclause = implode(' AND ', $wheres);
+
+        $sql = "SELECT lm.name AS branch_name,
+                       COUNT(DISTINCT r.id) AS courses_count,
+                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                  FROM {local_adminreport_runs} r
+             LEFT JOIN {local_adminreport_dim_members} lm ON lm.id = r.location_dim_id
+                 WHERE {$whereclause}
+              GROUP BY lm.name
+              ORDER BY courses_count DESC, trainees_count DESC";
+
+        $records = $DB->get_records_sql($sql, $params);
+        $rows = [];
+        $totalcourses = 0;
+        $totaltrainees = 0;
+
+        foreach ($records as $rec) {
+            $ccount = (int) $rec->courses_count;
+            $tcount = (int) $rec->trainees_count;
+            $totalcourses += $ccount;
+            $totaltrainees += $tcount;
+
+            $rows[] = [
+                'branch_name'    => $rec->branch_name ?: get_string('unspecified', 'local_adminreport'),
+                'courses_count'  => $ccount,
+                'trainees_count' => $tcount,
+            ];
+        }
+
+        return [
+            'rows'           => $rows,
+            'total_courses'  => $totalcourses,
+            'total_trainees' => $totaltrainees,
+        ];
+    }
+
+    /**
+     * Retrieve delivered programs summary by classification (Slide 5 Table 1 & Cards).
+     *
+     * @param int $start
+     * @param int $end
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_delivered_classification_summary(
+        int $start,
+        int $end,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $params = ['pstart' => $start, 'pend' => $end];
+        $wheres = [
+            'r.is_cancelled = 0',
+            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.startdate <= :pend',
+            'r.enddate >= :pstart',
+        ];
+
+        if ($allowedorgs !== null) {
+            if (empty($allowedorgs)) {
+                return ['cards' => [], 'total_runs' => 0, 'total_trainees' => 0];
+            }
+            list($scopein, $scopeparams) = $DB->get_in_or_equal($allowedorgs, SQL_PARAMS_NAMED, 'dsc');
+            $wheres[] = "r.org_dim_id $scopein";
+            $params = array_merge($params, $scopeparams);
+        }
+
+        $whereclause = implode(' AND ', $wheres);
+
+        $sql = "SELECT tm.name AS type_name,
+                       COUNT(DISTINCT r.id) AS runs_count,
+                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                  FROM {local_adminreport_runs} r
+             LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
+                 WHERE {$whereclause}
+              GROUP BY tm.name
+              ORDER BY runs_count DESC";
+
+        $records = $DB->get_records_sql($sql, $params);
+        $totalruns = 0;
+        $totaltrainees = 0;
+
+        // Standard classification cards matching Slide 5
+        $standardtypes = [
+            'دورة تطويرية' => [
+                'name' => 'دورة تطويرية', 'unit' => 'دورة', 'runs' => 0, 'trainees' => 0, 'badge' => 'border-primary',
+            ],
+            'دورة تأهيلية' => [
+                'name' => 'دورة تأهيلية', 'unit' => 'دورة', 'runs' => 0, 'trainees' => 0, 'badge' => 'border-info',
+            ],
+            'برنامج تأهيلي' => [
+                'name' => 'برنامج تأهيلي', 'unit' => 'برنامج', 'runs' => 0, 'trainees' => 0, 'badge' => 'border-warning',
+            ],
+            'دبلوم تدريبي' => [
+                'name' => 'دبلوم تدريبي', 'unit' => 'ديبلوم', 'runs' => 0, 'trainees' => 0, 'badge' => 'border-success',
+            ],
+            'الملتقيات والبرامج العالمية وورش العمل' => [
+                'name' => 'الملتقيات وورش العمل', 'unit' => 'فعالية', 'runs' => 0, 'trainees' => 0, 'badge' => 'border-secondary',
+            ],
+        ];
+
+        foreach ($records as $rec) {
+            $tname = trim($rec->type_name ?: '');
+            $rcount = (int) $rec->runs_count;
+            $tcount = (int) $rec->trainees_count;
+
+            $totalruns += $rcount;
+            $totaltrainees += $tcount;
+
+            $matched = false;
+            foreach ($standardtypes as $key => &$st) {
+                if ($tname === $key || mb_stripos($tname, $key) !== false || mb_stripos($key, $tname) !== false) {
+                    $st['runs'] += $rcount;
+                    $st['trainees'] += $tcount;
+                    $matched = true;
+                    break;
+                }
+            }
+            if (!$matched && !empty($tname)) {
+                $standardtypes[$tname] = [
+                    'name'     => $tname,
+                    'unit'     => 'دورة',
+                    'runs'     => $rcount,
+                    'trainees' => $tcount,
+                    'badge'    => 'border-dark',
+                ];
+            }
+        }
+
+        return [
+            'cards'          => array_values($standardtypes),
+            'total_runs'     => $totalruns,
+            'total_trainees' => $totaltrainees,
+        ];
+    }
+
+    /**
+     * Retrieve delivered sectors summary (Slide 5 Table 4).
+     *
+     * @param int $start
+     * @param int $end
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_delivered_sectors_summary(
+        int $start,
+        int $end,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $params = ['pstart' => $start, 'pend' => $end];
+        $wheres = [
+            'r.is_cancelled = 0',
+            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.startdate <= :pend',
+            'r.enddate >= :pstart',
+        ];
+
+        if ($allowedorgs !== null) {
+            if (empty($allowedorgs)) {
+                return ['sectors' => [], 'total_runs' => 0, 'total_trainees' => 0];
+            }
+            list($scopein, $scopeparams) = $DB->get_in_or_equal($allowedorgs, SQL_PARAMS_NAMED, 'secsc');
+            $wheres[] = "r.org_dim_id $scopein";
+            $params = array_merge($params, $scopeparams);
+        }
+
+        $whereclause = implode(' AND ', $wheres);
+
+        $sql = "SELECT COALESCE(sm.name, om.name, 'الشركات') AS sector_name,
+                       COUNT(DISTINCT r.id) AS runs_count,
+                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                  FROM {local_adminreport_runs} r
+             LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
+             LEFT JOIN {local_adminreport_dim_members} sm ON sm.id = om.parent_id
+                 WHERE {$whereclause}
+              GROUP BY COALESCE(sm.name, om.name, 'الشركات')
+              ORDER BY runs_count DESC";
+
+        $records = $DB->get_records_sql($sql, $params);
+        $totalruns = 0;
+        $totaltrainees = 0;
+
+        $standardsectors = [
+            'الهيئة' => ['name' => 'الهيئة', 'runs' => 0, 'trainees' => 0],
+            'الشركات' => ['name' => 'الشركات', 'runs' => 0, 'trainees' => 0],
+            'القطاع الحكومي والعسكري' => ['name' => 'القطاع الحكومي والعسكري', 'runs' => 0, 'trainees' => 0],
+            'دول الخليج' => ['name' => 'دول الخليج', 'runs' => 0, 'trainees' => 0],
+            'أفراد' => ['name' => 'أفراد', 'runs' => 0, 'trainees' => 0],
+            'المسؤولية المجتمعية' => ['name' => 'المسؤولية المجتمعية', 'runs' => 0, 'trainees' => 0],
+        ];
+
+        foreach ($records as $rec) {
+            $sname = trim($rec->sector_name ?: '');
+            $rcount = (int) $rec->runs_count;
+            $tcount = (int) $rec->trainees_count;
+            $totalruns += $rcount;
+            $totaltrainees += $tcount;
+
+            $matched = false;
+            foreach ($standardsectors as $key => &$ss) {
+                if (mb_stripos($sname, $key) !== false || mb_stripos($key, $sname) !== false) {
+                    $ss['runs'] += $rcount;
+                    $ss['trainees'] += $tcount;
+                    $matched = true;
+                    break;
+                }
+            }
+            if (!$matched && !empty($sname)) {
+                $standardsectors[$sname] = [
+                    'name'     => $sname,
+                    'runs'     => $rcount,
+                    'trainees' => $tcount,
+                ];
+            }
+        }
+
+        return [
+            'sectors'        => array_values($standardsectors),
+            'total_runs'     => $totalruns,
+            'total_trainees' => $totaltrainees,
+        ];
+    }
+
+    /**
+     * Retrieve delivered corporate clients detail (Slide 5 Table 5).
+     *
+     * @param int $start
+     * @param int $end
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_delivered_corporate_details(
+        int $start,
+        int $end,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $params = ['pstart' => $start, 'pend' => $end];
+        $wheres = [
+            'r.is_cancelled = 0',
+            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.startdate <= :pend',
+            'r.enddate >= :pstart',
+        ];
+
+        if ($allowedorgs !== null) {
+            if (empty($allowedorgs)) {
+                return ['rows' => [], 'total_programs' => 0, 'total_trainees' => 0];
+            }
+            list($scopein, $scopeparams) = $DB->get_in_or_equal($allowedorgs, SQL_PARAMS_NAMED, 'corpsc');
+            $wheres[] = "r.org_dim_id $scopein";
+            $params = array_merge($params, $scopeparams);
+        }
+
+        $whereclause = implode(' AND ', $wheres);
+
+        $sql = "SELECT om.name AS company_name,
+                       COUNT(DISTINCT r.id) AS programs_count,
+                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                  FROM {local_adminreport_runs} r
+             LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
+                 WHERE {$whereclause}
+              GROUP BY om.name
+              ORDER BY programs_count DESC, trainees_count DESC";
+
+        $records = $DB->get_records_sql($sql, $params);
+        $rows = [];
+        $totalprograms = 0;
+        $totaltrainees = 0;
+
+        foreach ($records as $rec) {
+            $pcount = (int) $rec->programs_count;
+            $tcount = (int) $rec->trainees_count;
+            $totalprograms += $pcount;
+            $totaltrainees += $tcount;
+
+            $rows[] = [
+                'company_name'   => $rec->company_name ?: get_string('unspecified', 'local_adminreport'),
+                'programs_count' => $pcount,
+                'trainees_count' => $tcount,
+            ];
+        }
+
+        return [
+            'rows'           => $rows,
+            'total_programs' => $totalprograms,
+            'total_trainees' => $totaltrainees,
+        ];
+    }
+
+    /**
+     * Generate the 4 Pie Chart datasets matching Slide 5 of the reference report.
+     *
+     * @param int $start
+     * @param int $end
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_delivered_pie_charts_data(
+        int $start,
+        int $end,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $params = ['pstart' => $start, 'pend' => $end];
+        $wheres = [
+            'r.is_cancelled = 0',
+            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.startdate <= :pend',
+            'r.enddate >= :pstart',
+        ];
+
+        if ($allowedorgs !== null) {
+            if (empty($allowedorgs)) {
+                return [
+                    'programs_by_type'   => ['labels' => [], 'series' => []],
+                    'trainees_by_type'   => ['labels' => [], 'series' => []],
+                    'programs_by_sector' => ['labels' => [], 'series' => []],
+                    'trainees_by_sector' => ['labels' => [], 'series' => []],
+                ];
+            }
+            list($scopein, $scopeparams) = $DB->get_in_or_equal($allowedorgs, SQL_PARAMS_NAMED, 'pieorg');
+            $wheres[] = "r.org_dim_id $scopein";
+            $params = array_merge($params, $scopeparams);
+        }
+
+        $whereclause = implode(' AND ', $wheres);
+
+        // 1. By Program Type
+        $sqltype = "SELECT tm.name AS label,
+                           COUNT(DISTINCT r.id) AS runs,
+                           SUM(COALESCE(r.planned_trainees, 0)) AS trainees
+                      FROM {local_adminreport_runs} r
+                 LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
+                     WHERE {$whereclause}
+                  GROUP BY tm.name
+                  ORDER BY runs DESC";
+        $typerecs = $DB->get_records_sql($sqltype, $params);
+
+        $progbytype = ['labels' => [], 'series' => []];
+        $traineebytype = ['labels' => [], 'series' => []];
+
+        foreach ($typerecs as $rec) {
+            $lbl = $rec->label ?: get_string('unspecified', 'local_adminreport');
+            $rval = (int) $rec->runs;
+            $tval = (int) $rec->trainees;
+            if ($rval > 0) {
+                $progbytype['labels'][] = $lbl;
+                $progbytype['series'][] = $rval;
+            }
+            if ($tval > 0) {
+                $traineebytype['labels'][] = $lbl;
+                $traineebytype['series'][] = $tval;
+            }
+        }
+
+        // 2. By Sector
+        $sqlsec = "SELECT COALESCE(sm.name, om.name, 'الشركات') AS label,
+                          COUNT(DISTINCT r.id) AS runs,
+                          SUM(COALESCE(r.planned_trainees, 0)) AS trainees
+                     FROM {local_adminreport_runs} r
+                LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
+                LEFT JOIN {local_adminreport_dim_members} sm ON sm.id = om.parent_id
+                    WHERE {$whereclause}
+                 GROUP BY COALESCE(sm.name, om.name, 'الشركات')
+                 ORDER BY runs DESC";
+        $secrecs = $DB->get_records_sql($sqlsec, $params);
+
+        $progbysec = ['labels' => [], 'series' => []];
+        $traineebysec = ['labels' => [], 'series' => []];
+
+        foreach ($secrecs as $rec) {
+            $lbl = $rec->label ?: get_string('unspecified', 'local_adminreport');
+            $rval = (int) $rec->runs;
+            $tval = (int) $rec->trainees;
+            if ($rval > 0) {
+                $progbysec['labels'][] = $lbl;
+                $progbysec['series'][] = $rval;
+            }
+            if ($tval > 0) {
+                $traineebysec['labels'][] = $lbl;
+                $traineebysec['series'][] = $tval;
+            }
+        }
+
+        return [
+            'programs_by_type'   => $progbytype,
+            'trainees_by_type'   => $traineebytype,
+            'programs_by_sector' => $progbysec,
+            'trainees_by_sector' => $traineebysec,
+        ];
+    }
+
+    /**
+     * Retrieve 12-Month Annual Trajectory table (Slide 6 Table 1).
+     *
+     * @param int $year
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_monthly_trajectory(
+        int $year,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $monthnames = [
+            1 => 'يناير', 2 => 'فبراير', 3 => 'مارس', 4 => 'أبريل',
+            5 => 'مايو', 6 => 'يونيو', 7 => 'يوليو', 8 => 'أغسطس',
+            9 => 'سبتمبر', 10 => 'أكتوبر', 11 => 'نوفمبر', 12 => 'ديسمبر',
+        ];
+
+        $sql = "SELECT ms.month,
+                       SUM(ms.runs_count) AS runs,
+                       SUM(ms.participations_count) AS trainees
+                  FROM {local_adminreport_monthly_stats} ms
+                 WHERE ms.year = :year
+              GROUP BY ms.month
+              ORDER BY ms.month ASC";
+
+        $dbmonths = $DB->get_records_sql($sql, ['year' => $year]);
+
+        $rows = [];
+        $cumruns = 0;
+        $cumtrainees = 0;
+
+        for ($m = 1; $m <= 12; $m++) {
+            $mruns = isset($dbmonths[$m]) ? (int) $dbmonths[$m]->runs : 0;
+            $mtrainees = isset($dbmonths[$m]) ? (int) $dbmonths[$m]->trainees : 0;
+
+            $cumruns += $mruns;
+            $cumtrainees += $mtrainees;
+
+            $rows[] = [
+                'month_num'           => $m,
+                'month_name'          => $monthnames[$m],
+                'month_runs'          => $mruns,
+                'month_trainees'      => $mtrainees,
+                'cumulative_runs'     => $cumruns,
+                'cumulative_trainees' => $cumtrainees,
+            ];
+        }
+
+        return [
+            'year'                => $year,
+            'rows'                => $rows,
+            'annual_runs'         => $cumruns,
+            'annual_trainees'     => $cumtrainees,
+        ];
+    }
+
+    /**
+     * Retrieve list of strategic partners and long-term programs (Slide 6 Table 3).
+     *
+     * @return array
+     */
+    public static function get_strategic_partners_list(): array {
+        global $DB;
+
+        $sql = "SELECT DISTINCT om.name AS partner_name,
+                       COUNT(DISTINCT r.id) AS programs_count,
+                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                  FROM {local_adminreport_runs} r
+                  JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
+             LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
+                 WHERE r.is_cancelled = 0
+              GROUP BY om.name
+              ORDER BY programs_count DESC";
+
+        $records = $DB->get_records_sql($sql);
+        $partners = [];
+        foreach ($records as $p) {
+            $partners[] = [
+                'partner_name'   => $p->partner_name,
+                'programs_count' => (int) $p->programs_count,
+                'trainees_count' => (int) $p->trainees_count,
+            ];
+        }
+        return $partners;
+    }
+
+    /**
+     * Retrieve annual cumulative rollup (Slide 6 Table 4).
+     *
+     * @param int $year
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_cumulative_summary(
+        int $year,
+        ?array $allowedorgs = null,
+        array $filters = []
+    ): array {
+        global $DB;
+
+        $sql = "SELECT tm.name AS type_name,
+                       SUM(ms.runs_count) AS runs_count,
+                       SUM(ms.participations_count) AS trainees_count
+                  FROM {local_adminreport_monthly_stats} ms
+             LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = ms.type_dim_id
+                 WHERE ms.year = :year
+              GROUP BY tm.name";
+
+        $records = $DB->get_records_sql($sql, ['year' => $year]);
+        $totalruns = 0;
+        $totaltrainees = 0;
+        $breakdown = [];
+
+        foreach ($records as $rec) {
+            $rcount = (int) $rec->runs_count;
+            $tcount = (int) $rec->trainees_count;
+            $totalruns += $rcount;
+            $totaltrainees += $tcount;
+            $breakdown[] = [
+                'type_name'      => $rec->type_name ?: get_string('unspecified', 'local_adminreport'),
+                'runs_count'     => $rcount,
+                'trainees_count' => $tcount,
+            ];
+        }
+
+        return [
+            'year'           => $year,
+            'total_runs'     => $totalruns,
+            'total_trainees' => $totaltrainees,
+            'breakdown'      => $breakdown,
+        ];
+    }
+
+    /**
+     * Retrieve detailed trainee progress report.
+     *
+     * @param int[]|null $allowedorgs
+     * @param array $filters
+     * @return array
+     */
+    public static function get_trainees_report(?array $allowedorgs = null, array $filters = []): array {
+        global $DB;
+
+        $sql = "SELECT DISTINCT u.id AS userid,
+                       u.firstname, u.lastname, u.email, u.idnumber,
+                       r.id AS run_id, r.run_code, r.courseid,
+                       c.fullname AS coursename,
+                       om.name AS orgname,
+                       lm.name AS locname
+                  FROM {user} u
+                  JOIN {user_enrolments} ue ON ue.userid = u.id AND ue.status = 0
+                  JOIN {enrol} e ON e.id = ue.enrolid
+                  JOIN {course} c ON c.id = e.courseid
+                  JOIN {local_adminreport_runs} r ON r.courseid = c.id AND r.is_cancelled = 0
+             LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
+             LEFT JOIN {local_adminreport_dim_members} lm ON lm.id = r.location_dim_id
+                 WHERE u.deleted = 0
+              ORDER BY u.lastname ASC, u.firstname ASC";
+
+        $records = $DB->get_records_sql($sql, [], 0, 100);
+        $trainees = [];
+
+        foreach ($records as $rec) {
+            $completed = $DB->record_exists('course_completions', [
+                'userid' => $rec->userid,
+                'course' => $rec->courseid,
+            ]);
+
+            $statuslabel = $completed
+                ? get_string('status_completed', 'local_adminreport')
+                : get_string('status_in_progress', 'local_adminreport');
+            $badgeclass = $completed ? 'bg-success' : 'bg-primary';
+
+            $trainees[] = [
+                'userid'       => (int) $rec->userid,
+                'fullname'     => fullname($rec),
+                'email'        => $rec->email,
+                'idnumber'     => $rec->idnumber ?: '-',
+                'coursename'   => $rec->coursename,
+                'courseid'     => (int) $rec->courseid,
+                'run_code'     => $rec->run_code,
+                'orgname'      => $rec->orgname ?: '-',
+                'locname'      => $rec->locname ?: '-',
+                'status_label' => $statuslabel,
+                'badge_class'  => $badgeclass,
+            ];
+        }
+
+        return $trainees;
+    }
 }
+

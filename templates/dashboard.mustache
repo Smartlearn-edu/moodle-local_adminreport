@@ -17,7 +17,7 @@
 {{!
     @template local_adminreport/dashboard
 
-    Main dashboard template for local_adminreport.
+    Master executive management intelligence dashboard with Left-Pane navigation.
 }}
 <div class="adminreport-dashboard-container">
     <!-- Loading Overlay -->
@@ -59,7 +59,7 @@
 
             <!-- Runs Management Link -->
             {{#can_manage}}
-            <a href="{{{config.wwwroot}}}/local/adminreport/runs.php" class="btn btn-sm btn-outline-secondary">
+            <a href="{{runs_manage_url}}" class="btn btn-sm btn-outline-secondary">
                 <i class="fa fa-cogs me-1" aria-hidden="true"></i>
                 {{#str}} runs, local_adminreport {{/str}}
             </a>
@@ -86,104 +86,53 @@
         </div>
     </div>
 
-    <!-- Filter Toolbar -->
-    <div class="adminreport-filter-bar p-3 mb-4">
-        <div class="row g-2 align-items-center">
-            <div class="col-12 col-md-3">
-                <label for="filter-org" class="form-label small text-muted mb-1">{{#str}} organization, local_adminreport {{/str}}</label>
-                <select id="filter-org" class="form-select form-select-sm">
-                    <option value="0">{{#str}} all_organizations, local_adminreport {{/str}}</option>
-                    {{#organizations}}
-                    <option value="{{id}}">{{name}}</option>
-                    {{/organizations}}
-                </select>
-            </div>
-
-            <div class="col-12 col-md-3">
-                <label for="filter-type" class="form-label small text-muted mb-1">{{#str}} program_type, local_adminreport {{/str}}</label>
-                <select id="filter-type" class="form-select form-select-sm">
-                    <option value="0">{{#str}} all_program_types, local_adminreport {{/str}}</option>
-                    {{#program_types}}
-                    <option value="{{id}}">{{name}}</option>
-                    {{/program_types}}
-                </select>
-            </div>
-
-            <div class="col-12 col-md-3">
-                <label for="filter-location" class="form-label small text-muted mb-1">{{#str}} location, local_adminreport {{/str}}</label>
-                <select id="filter-location" class="form-select form-select-sm">
-                    <option value="0">{{#str}} all_locations, local_adminreport {{/str}}</option>
-                    {{#locations}}
-                    <option value="{{id}}">{{name}}</option>
-                    {{/locations}}
-                </select>
-            </div>
-
-            <div class="col-12 col-md-3 d-flex align-items-end">
-                <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-md-4" id="btn-reset-filters">
-                    <i class="fa fa-refresh me-1" aria-hidden="true"></i>
-                    {{#str}} reset_filters, local_adminreport {{/str}}
+    <!-- Left-Pane Navigation & Content Layout -->
+    <div class="row g-3">
+        <!-- Left Pane Navigation (Sidebar) -->
+        <div class="col-12 col-lg-3 col-xl-2 mb-3">
+            <div class="nav flex-column nav-pills executive-left-nav shadow-sm bg-white p-2 rounded" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active text-start py-3 px-3 mb-2" id="v-pills-plans-tab" data-bs-toggle="pill" data-bs-target="#v-pills-plans" type="button" role="tab" aria-controls="v-pills-plans" aria-selected="true">
+                    <i class="fa fa-calendar-check-o me-2" aria-hidden="true"></i>
+                    {{#str}} nav_weekly_plans, local_adminreport {{/str}}
+                </button>
+                <button class="nav-link text-start py-3 px-3 mb-2" id="v-pills-delivered-tab" data-bs-toggle="pill" data-bs-target="#v-pills-delivered" type="button" role="tab" aria-controls="v-pills-delivered" aria-selected="false">
+                    <i class="fa fa-graduation-cap me-2" aria-hidden="true"></i>
+                    {{#str}} nav_delivered_programs, local_adminreport {{/str}}
+                </button>
+                <button class="nav-link text-start py-3 px-3 mb-2" id="v-pills-trainees-tab" data-bs-toggle="pill" data-bs-target="#v-pills-trainees" type="button" role="tab" aria-controls="v-pills-trainees" aria-selected="false">
+                    <i class="fa fa-users me-2" aria-hidden="true"></i>
+                    {{#str}} nav_trainees_reports, local_adminreport {{/str}}
+                </button>
+                <button class="nav-link text-start py-3 px-3" id="v-pills-management-tab" data-bs-toggle="pill" data-bs-target="#v-pills-management" type="button" role="tab" aria-controls="v-pills-management" aria-selected="false">
+                    <i class="fa fa-cogs me-2" aria-hidden="true"></i>
+                    {{#str}} nav_management, local_adminreport {{/str}}
                 </button>
             </div>
         </div>
-    </div>
 
-    <!-- Early Warning Alert Banner -->
-    <div id="early-warning-banner" class="alert alert-warning-executive p-3 mb-4 d-flex align-items-center gap-3 {{^total_at_risk}}d-none{{/total_at_risk}}">
-        <i class="fa fa-exclamation-triangle fa-2x text-warning" aria-hidden="true"></i>
-        <div>
-            <h6 class="mb-0 fw-bold">{{#str}} early_warning, local_adminreport {{/str}}</h6>
-            <span class="small">
-                {{#str}} at_risk_alert_msg, local_adminreport, <strong id="early-warning-count">{{total_at_risk}}</strong> {{/str}}
-            </span>
-        </div>
-    </div>
+        <!-- Main Content Area -->
+        <div class="col-12 col-lg-9 col-xl-10">
+            <div class="tab-content" id="v-pills-tabContent">
+                <!-- Pane 1: Weekly Plans (Slides 2, 3, 4) -->
+                <div class="tab-pane fade show active" id="v-pills-plans" role="tabpanel" aria-labelledby="v-pills-plans-tab" tabindex="0">
+                    {{> local_adminreport/weekly_plans }}
+                </div>
 
-    <!-- KPI Cards Component -->
-    {{> local_adminreport/kpi_cards }}
+                <!-- Pane 2: Delivered Programs (Slides 5, 6) -->
+                <div class="tab-pane fade" id="v-pills-delivered" role="tabpanel" aria-labelledby="v-pills-delivered-tab" tabindex="0">
+                    {{> local_adminreport/delivered_programs }}
+                </div>
 
-    <!-- Charts Grid -->
-    <div class="row g-3 mb-4">
-        <!-- Chart 1: Locations Distribution -->
-        <div class="col-12 col-lg-4">
-            <div class="chart-card">
-                <div class="chart-card-header d-flex justify-content-between align-items-center">
-                    <span>{{#str}} chart_locations_title, local_adminreport {{/str}}</span>
-                    <i class="fa fa-pie-chart text-muted" aria-hidden="true"></i>
+                <!-- Pane 3: Trainees Reports -->
+                <div class="tab-pane fade" id="v-pills-trainees" role="tabpanel" aria-labelledby="v-pills-trainees-tab" tabindex="0">
+                    {{> local_adminreport/trainees_pane }}
                 </div>
-                <div class="chart-card-body">
-                    <div id="chart-locations-container" style="min-height: 320px;"></div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Chart 2: Program Classifications -->
-        <div class="col-12 col-lg-4">
-            <div class="chart-card">
-                <div class="chart-card-header d-flex justify-content-between align-items-center">
-                    <span>{{#str}} chart_classifications_title, local_adminreport {{/str}}</span>
-                    <i class="fa fa-bar-chart text-muted" aria-hidden="true"></i>
-                </div>
-                <div class="chart-card-body">
-                    <div id="chart-classifications-container" style="min-height: 320px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Chart 3: Historical Trends -->
-        <div class="col-12 col-lg-4">
-            <div class="chart-card">
-                <div class="chart-card-header d-flex justify-content-between align-items-center">
-                    <span>{{#str}} chart_trends_title, local_adminreport {{/str}}</span>
-                    <i class="fa fa-line-chart text-muted" aria-hidden="true"></i>
-                </div>
-                <div class="chart-card-body">
-                    <div id="chart-trends-container" style="min-height: 320px;"></div>
+                <!-- Pane 4: Management & Import -->
+                <div class="tab-pane fade" id="v-pills-management" role="tabpanel" aria-labelledby="v-pills-management-tab" tabindex="0">
+                    {{> local_adminreport/management_pane }}
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Operational Schedule Table Component -->
-    {{> local_adminreport/operational_table }}
 </div>

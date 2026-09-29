@@ -1,0 +1,109 @@
+Implementation Plan: SWA Reference Report Fidelity & 5-Tab Executive Management Dashboard
+Deliver the complete Management Intelligence & Operational Analytics Dashboard (local_adminreport) matching all 6 slides of the reference weekly report (Saudi Water Authority / الأكاديمية السعودية للمياه - 03-09-2026 التقرير الاسبوعي.pptx & .pdf), resolve zero-data state via auto-seeding, and provide the multi-table Phase 5 export engine.
+
+Problem Analysis & User Feedback Resolution
+"Still no data !":
+
+On a clean Moodle environment, local_adminreport_runs is empty (0 records).
+If courses have no active student enrolments, queries returned 0 trainees even when planned_trainees was populated.
+Fix:
+index.php automatically calls dimension_manager::seed_swa_reference_dataset() if local_adminreport_runs is empty.
+Add 1-click toolbar buttons: [تحميل بيانات هيئة المياه التجريبية (SWA Data)] and [مزامنة مقررات موودل (Sync Live Courses)].
+In query_engine.php and tier_stitcher.php, fallback to planned_trainees when course enrolments are empty so that reference and planned runs display realistic counts.
+"Too few data shown ! No tables, no pages... Look at the reference pdf, pptx / Missed phase 5 ?":
+
+The UI previously contained only 1 generic table and 3 charts.
+The reference report (03-09-2026 التقرير الاسبوعي) contains 6 comprehensive slides with distinct executive views:
+Slide 1: Executive Cover & Weekly Period Overview.
+Slide 2 & 3: Detailed Operational & Diploma Training Schedule (17 short programs + 6 diplomas) with Classroom (B1-15, B1-16, B1-23, B1-79...), Daily Timings (08:00 - 14:00), Break (09:00 - 09:30), Exam (11:00), Trainer, and Trainees count.
+Slide 4: Plans by Entity & Program Type (Table 2: 22 runs / 337 trainees across Nama, Erwaa, NWC MOMC, NWC Safety, Chotco, Waad, KSB, Alkhorayef/ILF/Bewater) + Regional Branch summary (Table 3: 7 branches).
+Slide 5: Weekly Delivered Programs (19 runs / 258 trainees across Developmental, Qualifying, Diploma) + Sector breakdown (Table 4) + Corporate Clients Detail (Table 5: Erwaa, MOMC, NWC Safety, IWP, Chotco, Alkhorayef).
+Slide 6: Annual Cumulative 2026 (Table 2 & 4: 287 runs / 4,409 trainees) + 12-Month Trajectory (Table 1: Jan–Dec) + Strategic Partners list (Table 3).
+Fix:
+Build a 5-Tab Executive UI using Bootstrap 5 nav-tabs in templates/dashboard.mustache.
+Expand tier_stitcher.php with 7 dedicated analytical table query methods.
+Upgrade Phase 5 report_exporter.php and export.php to export each specific table (or all tables) to native Excel (.xlsx).
+Proposed Changes
+Component 1: Analytics & Data Aggregation Engine
+[MODIFY] 
+dimension_manager.php
+Implement public static function get_or_create_member($dimtype, string $name, ?string $code = null, ?int $parentid = null): int.
+In get_run_organizations_distribution($run): if enrolled users are 0, fallback to [$run->org_dim_id => (int)$run->planned_trainees].
+Verify and refine seed_swa_reference_dataset() to ensure all 22 reference runs, 7 branches, 5 sectors, and 12 corporate cohorts are accurately seeded.
+[MODIFY] 
+query_engine.php
+In compute_run_facts(): support fallback to $run->planned_trainees for training hours and flow calculations when courses have no enrolled users.
+In calculate_run_daily_hours(): calculate net hours using daily_start_time, daily_end_time, and break_duration_min.
+[MODIFY] 
+tier_stitcher.php
+Add specialized table aggregators:
+get_operational_runs(): include classroom, daily_time, break_time, exam_time, duration_days, and fallback participants.
+get_org_summary_table(): aggregates by Entity + Program Type + Location (Slide 4 Table 2: 22 runs / 337 trainees).
+get_location_summary_table(): aggregates by Regional Branch / Center (Slide 4 Table 3: 7 branches).
+get_classification_summary_table(): weekly delivered programs by type (Slide 5 Table 1: 19 runs / 258 trainees).
+get_sector_summary_table(): runs and trainees by Sector (Slide 5 Table 4).
+get_corporate_detail_table(): delivered programs by Corporate Entity (Slide 5 Table 5: 11 programs / 147 trainees).
+get_monthly_trajectory_table(): 12-month trajectory from January to December (Slide 6 Table 1).
+get_strategic_partners_list(): ongoing partnerships and long-term diplomas (Slide 6 Table 3).
+get_cumulative_summary(): annual cumulative rollup for 2026 (287 runs / 4,409 trainees).
+Component 2: Dashboard Controller & Multi-Tab Templates
+[MODIFY] 
+index.php
+Auto-seed SWA reference dataset if count_records('local_adminreport_runs') === 0.
+Handle action=seed_swa and action=sync_courses actions with confirm_sesskey() and require_capability('local/adminreport:manage').
+Retrieve all 7 table datasets from tier_stitcher and pass them to $templatedata.
+[MODIFY] 
+templates/dashboard.mustache
+Reorganize into 5 Bootstrap 5 tabs:
+Tab 1 (#tab-overview): Executive Overview (KPI Cards + 3 ApexCharts + Regional Branch Summary Table + Early Warning Banner).
+Tab 2 (#tab-schedule): Operational Schedule (Slides 2 & 3: 11-column weekly schedule with search, filters, and Excel export).
+Tab 3 (#tab-organizations): Organizations & Branches (Slide 4 Table 2: 22 runs / 337 trainees + Table 3: 7 branches).
+Tab 4 (#tab-sectors): Sectoral & Classification Analysis (Slide 5: Program Classifications, Sector distribution, Corporate clients detail).
+Tab 5 (#tab-cumulative): Annual Cumulative & Trajectory (Slide 6: Grand Cumulative card 287/4,409, 12-Month Trajectory table, Strategic Partners list).
+Add toolbar action buttons:
+[تحميل بيانات هيئة المياه التجريبية (SWA Reference Data)]
+[مزامنة مقررات موودل الفعلية (Sync Live Courses)]
+[MODIFY] 
+templates/operational_table.mustache
+Enhance table columns to include: Code, Course Name, Entity, Program Type, Classroom / Center, Trainer, Duration, Daily Time, Break, Exam Time, Trainees, and Status.
+Component 3: Phase 5 Export Engine & Localization
+[MODIFY] 
+export.php
+ & 
+classes/export/report_exporter.php
+Support exporting specific tables:
+type=runs (Operational Schedule)
+type=org_summary (Plans by Entity & Type)
+type=location_summary (Branches Distribution)
+type=sectors (Sectoral & Corporate Detail)
+type=trajectory (12-Month Annual Trajectory)
+type=all (Comprehensive Executive Report)
+Utilize native \core\dataformat::download_data().
+[MODIFY] 
+lang/en/local_adminreport.php
+ & 
+lang/ar/local_adminreport.php
+Add complete Arabic and English strings for all 5 tabs, new table headers (Classroom, Break Time, Exam Time, Trajectory, Strategic Partners, Sectors), and toolbar actions.
+[MODIFY] 
+styles.css
+Style executive tables, tab transitions, pill badges, and ensure clean print formatting across all tabs.
+Verification Plan
+Automated Tests
+Run syntax verification on all PHP files:
+bash
+
+find . -name "*.php" -exec php -l {} \;
+Run Phase 5 CLI test runner:
+bash
+
+php cli/test_phase5.php --seed
+Verify mathematical reconciliation:
+Planned runs: exactly 22 runs, 337 trainees.
+Regional distribution: Jubail (125), Riyadh (96), Hail (45), Oman (21), Online (20), Buraydah (15), Jouf (15) = 337.
+Delivered runs: 19 runs, 258 trainees.
+Corporate detail: 11 programs, 147 trainees.
+Annual cumulative: 287 runs, 4,409 trainees.
+Manual Verification
+Verify that opening index.php loads the 5 tabs immediately with full data populated from the SWA reference set.
+Verify that switching tabs displays each table smoothly without breaking navigation or layout.
+Test clicking the Excel export buttons to verify clean .xlsx generation. 

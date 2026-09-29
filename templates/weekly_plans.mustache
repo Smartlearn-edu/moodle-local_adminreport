@@ -1,0 +1,212 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_adminreport/weekly_plans
+
+    Weekly training plans view matching Slides 2, 3, 4 of the reference report.
+}}
+<div class="weekly-plans-container">
+    <!-- Section 1: Weekly Course Schedule (Slides 2 & 3) -->
+    <div class="card mb-4 border-0 shadow-sm executive-card">
+        <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h5 class="mb-0 fw-bold text-dark">
+                    <i class="fa fa-calendar-check-o me-2 text-primary" aria-hidden="true"></i>
+                    {{#str}} weekly_schedule_title, local_adminreport {{/str}}
+                </h5>
+                <small class="text-muted">{{start_date_formatted}} &ndash; {{end_date_formatted}}</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 260px;">
+                    <span class="input-group-text bg-light border-end-0">
+                        <i class="fa fa-search text-muted" aria-hidden="true"></i>
+                    </span>
+                    <input type="text" id="schedule-search-input" class="form-control form-control-sm border-start-0" placeholder="{{#str}} search {{/str}}...">
+                </div>
+                <a href="{{export_url_runs}}" class="btn btn-sm btn-outline-success">
+                    <i class="fa fa-file-excel-o me-1" aria-hidden="true"></i>
+                    {{#str}} export_excel, local_adminreport {{/str}}
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0 executive-table" id="weekly-runs-table">
+                    <thead class="table-primary text-dark fs-7">
+                        <tr>
+                            <th scope="col" style="min-width: 220px;">{{#str}} course_name, local_adminreport {{/str}}</th>
+                            <th scope="col">{{#str}} code_no, local_adminreport {{/str}}</th>
+                            <th scope="col">{{#str}} duration, local_adminreport {{/str}}</th>
+                            <th scope="col">{{#str}} trainer_name, local_adminreport {{/str}}</th>
+                            <th scope="col">{{#str}} classroom, local_adminreport {{/str}}</th>
+                            <th scope="col" class="text-center">{{#str}} trainees_number, local_adminreport {{/str}}</th>
+                            <th scope="col">{{#str}} daily_time, local_adminreport {{/str}}</th>
+                            <th scope="col">{{#str}} break_time, local_adminreport {{/str}}</th>
+                            <th scope="col">{{#str}} exam_time, local_adminreport {{/str}}</th>
+                            <th scope="col" class="text-center">{{#str}} status, local_adminreport {{/str}}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="fs-7">
+                        {{#runs}}
+                        <tr>
+                            <td>
+                                <a href="{{{config.wwwroot}}}/course/view.php?id={{courseid}}" class="fw-bold text-decoration-none text-dark">
+                                    {{coursename}}
+                                </a>
+                                <div class="small text-muted">{{orgname}} &bull; {{typename}}</div>
+                            </td>
+                            <td><code>{{run_code}}</code></td>
+                            <td><span class="badge bg-light text-dark border">{{duration_label}}</span></td>
+                            <td>{{trainer_name}}</td>
+                            <td><strong>{{classroom}}</strong></td>
+                            <td class="text-center"><span class="badge bg-primary fs-7">{{participants}}</span></td>
+                            <td><small class="text-nowrap">{{daily_time}}</small></td>
+                            <td><small class="text-nowrap text-muted">{{break_time}}</small></td>
+                            <td><small class="text-nowrap text-muted">{{exam_time}}</small></td>
+                            <td class="text-center"><span class="badge {{badge_class}}">{{status_label}}</span></td>
+                        </tr>
+                        {{/runs}}
+                        {{^has_runs}}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted p-4">
+                                {{#str}} no_runs_found, local_adminreport {{/str}}
+                            </td>
+                        </tr>
+                        {{/has_runs}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Plans by Entity & Program Type (Slide 4 Table 2) -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm h-100 executive-card">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="fa fa-building-o me-2 text-primary" aria-hidden="true"></i>
+                        {{#str}} plans_by_entity_title, local_adminreport {{/str}}
+                    </h6>
+                    <a href="{{export_url_entity}}" class="btn btn-sm btn-outline-success">
+                        <i class="fa fa-file-excel-o me-1" aria-hidden="true"></i>
+                        {{#str}} export_excel, local_adminreport {{/str}}
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle mb-0 executive-table">
+                            <thead class="table-light fs-7">
+                                <tr>
+                                    <th scope="col">{{#str}} entity, local_adminreport {{/str}}</th>
+                                    <th scope="col">{{#str}} program_type, local_adminreport {{/str}}</th>
+                                    <th scope="col">{{#str}} execution_location, local_adminreport {{/str}}</th>
+                                    <th scope="col" class="text-center">{{#str}} programs_count, local_adminreport {{/str}}</th>
+                                    <th scope="col" class="text-center">{{#str}} trainees_number, local_adminreport {{/str}}</th>
+                                    <th scope="col" class="text-center">{{#str}} groups_count, local_adminreport {{/str}}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fs-7">
+                                {{#plans_by_entity.rows}}
+                                <tr>
+                                    <td class="fw-bold">{{entity_name}}</td>
+                                    <td><span class="badge bg-light text-dark border">{{program_type}}</span></td>
+                                    <td>{{location_name}}</td>
+                                    <td class="text-center"><strong>{{programs_count}}</strong></td>
+                                    <td class="text-center"><span class="badge bg-primary">{{trainees_count}}</span></td>
+                                    <td class="text-center text-muted">{{groups_count}}</td>
+                                </tr>
+                                {{/plans_by_entity.rows}}
+                                {{^has_plans_by_entity}}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted p-3">
+                                        {{#str}} no_data_available, local_adminreport {{/str}}
+                                    </td>
+                                </tr>
+                                {{/has_plans_by_entity}}
+                            </tbody>
+                            {{#has_plans_by_entity}}
+                            <tfoot class="table-light fs-7 fw-bold">
+                                <tr>
+                                    <td colspan="3">{{#str}} total, local_adminreport {{/str}}</td>
+                                    <td class="text-center">{{plans_by_entity.total_programs}}</td>
+                                    <td class="text-center"><span class="badge bg-dark">{{plans_by_entity.total_trainees}}</span></td>
+                                    <td class="text-center">{{plans_by_entity.total_groups}}</td>
+                                </tr>
+                            </tfoot>
+                            {{/has_plans_by_entity}}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Distribution by Regional Branch (Slide 4 Table 3) -->
+        <div class="col-12 col-xl-4">
+            <div class="card border-0 shadow-sm h-100 executive-card">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="fa fa-map-marker me-2 text-primary" aria-hidden="true"></i>
+                        {{#str}} regional_branches_title, local_adminreport {{/str}}
+                    </h6>
+                    <a href="{{export_url_branch}}" class="btn btn-sm btn-outline-success">
+                        <i class="fa fa-file-excel-o me-1" aria-hidden="true"></i>
+                        {{#str}} export_excel, local_adminreport {{/str}}
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle mb-0 executive-table">
+                            <thead class="table-light fs-7">
+                                <tr>
+                                    <th scope="col">{{#str}} branch, local_adminreport {{/str}}</th>
+                                    <th scope="col" class="text-center">{{#str}} courses_count, local_adminreport {{/str}}</th>
+                                    <th scope="col" class="text-center">{{#str}} trainees_number, local_adminreport {{/str}}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fs-7">
+                                {{#plans_by_branch.rows}}
+                                <tr>
+                                    <td class="fw-bold">{{branch_name}}</td>
+                                    <td class="text-center">{{courses_count}}</td>
+                                    <td class="text-center"><span class="badge bg-info text-dark">{{trainees_count}}</span></td>
+                                </tr>
+                                {{/plans_by_branch.rows}}
+                                {{^has_plans_by_branch}}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted p-3">
+                                        {{#str}} no_data_available, local_adminreport {{/str}}
+                                    </td>
+                                </tr>
+                                {{/has_plans_by_branch}}
+                            </tbody>
+                            {{#has_plans_by_branch}}
+                            <tfoot class="table-light fs-7 fw-bold">
+                                <tr>
+                                    <td>{{#str}} total, local_adminreport {{/str}}</td>
+                                    <td class="text-center">{{plans_by_branch.total_courses}}</td>
+                                    <td class="text-center"><span class="badge bg-dark">{{plans_by_branch.total_trainees}}</span></td>
+                                </tr>
+                            </tfoot>
+                            {{/has_plans_by_branch}}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

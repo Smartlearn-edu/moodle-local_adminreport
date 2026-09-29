@@ -176,6 +176,54 @@ class dimension_manager {
     }
 
     /**
+     * Helper to get or create dimension member by dim_type_id or code.
+     *
+     * @param int|string $dimtype ID or code of dimension type.
+     * @param string $name Member display name.
+     * @param string|null $code Member unique slug/code.
+     * @param int|null $parentid Optional parent member ID.
+     * @return int Member ID.
+     */
+    public static function get_or_create_member($dimtype, string $name, ?string $code = null, ?int $parentid = null): int {
+        global $DB;
+
+        if (is_numeric($dimtype)) {
+            $dimtypeid = (int) $dimtype;
+        } else {
+            $type = $DB->get_record('local_adminreport_dim_types', ['code' => $dimtype]);
+            $dimtypeid = $type ? (int) $type->id : 0;
+        }
+
+        if (empty($code)) {
+            $code = self::slugify($name);
+        }
+
+        $existing = $DB->get_record('local_adminreport_dim_members', [
+            'dim_type_id' => $dimtypeid,
+            'code'        => $code,
+        ]);
+
+        if ($existing) {
+            if ($parentid !== null && $existing->parent_id !== $parentid) {
+                $existing->parent_id = $parentid;
+                $existing->timemodified = time();
+                $DB->update_record('local_adminreport_dim_members', $existing);
+            }
+            return (int) $existing->id;
+        }
+
+        $record = (object) [
+            'dim_type_id'  => $dimtypeid,
+            'parent_id'    => $parentid,
+            'code'         => $code,
+            'name'         => $name,
+            'timemodified' => time(),
+        ];
+
+        return (int) $DB->insert_record('local_adminreport_dim_members', $record);
+    }
+
+    /**
      * Resolve dimensions for a given Moodle course based on category hierarchy and name patterns.
      *
      * @param int $courseid
@@ -291,7 +339,8 @@ class dimension_manager {
         // Fetch enrolled users in the run.
         $userids = self::get_run_enrolled_userids($run);
         if (empty($userids)) {
-            return $run->org_dim_id ? [$run->org_dim_id => 0] : [];
+            $fallbackcount = !empty($run->planned_trainees) ? (int) $run->planned_trainees : 0;
+            return $run->org_dim_id ? [$run->org_dim_id => $fallbackcount] : [];
         }
 
         $totalusers = count($userids);

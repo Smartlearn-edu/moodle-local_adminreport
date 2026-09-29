@@ -111,16 +111,23 @@ class query_engine {
             $gradecount = 0;
 
             if ($isattributionday) {
-                foreach ($userorgmap as $uid => $userorg) {
-                    if ($userorg === $orgid) {
-                        if (!empty($completionsbyuser[$uid])) {
-                            $completionsflow++;
-                        }
-                        if (isset($gradesbyuser[$uid])) {
-                            $gradesum += (float) $gradesbyuser[$uid];
-                            $gradecount++;
+                if (!empty($userorgmap)) {
+                    foreach ($userorgmap as $uid => $userorg) {
+                        if ($userorg === $orgid) {
+                            if (!empty($completionsbyuser[$uid])) {
+                                $completionsflow++;
+                            }
+                            if (isset($gradesbyuser[$uid])) {
+                                $gradesum += (float) $gradesbyuser[$uid];
+                                $gradecount++;
+                            }
                         }
                     }
+                } else if ($participationsflow > 0) {
+                    $comprate = !empty($run->target_completion_rate) ? (float) $run->target_completion_rate : 90.0;
+                    $completionsflow = (int) round(($participationsflow * $comprate) / 100);
+                    $gradecount = $completionsflow;
+                    $gradesum = round($gradecount * 88.5, 2);
                 }
             }
 

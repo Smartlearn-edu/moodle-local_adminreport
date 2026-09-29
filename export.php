@@ -32,6 +32,7 @@ if (!has_capability('local/adminreport:export', $context)) {
     require_capability('local/adminreport:view', $context);
 }
 
+$table     = optional_param('table', 'plans_schedule', PARAM_ALPHAEXT);
 $format    = optional_param('format', 'excel', PARAM_ALPHA);
 $period    = optional_param('period', 'week', PARAM_ALPHA);
 $startdate = optional_param('start_date', 0, PARAM_INT);
@@ -56,7 +57,8 @@ if ($locdimid > 0) {
     $filterdims['location'] = $locdimid;
 }
 
-\local_adminreport\export\report_exporter::export_operational_runs(
+\local_adminreport\export\report_exporter::export_table(
+    $table,
     $format,
     $period,
     $startdate,
