@@ -97,10 +97,12 @@ define(['jquery', 'core/ajax', 'core/notification', 'local_adminreport/charts'],
 
                 // Left-Pane navigation click handler.
                 $('#v-pills-tab').on('click', '.nav-link', function(e) {
-                    e.preventDefault();
                     var target = $(this).attr('data-bs-target') || $(this).attr('data-target');
                     var tabName = $(this).attr('data-tab-name');
-                    switchTab(target, tabName);
+                    if (target) {
+                        e.preventDefault();
+                        switchTab(target, tabName);
+                    }
                 });
 
                 // Toggle custom date range panel.

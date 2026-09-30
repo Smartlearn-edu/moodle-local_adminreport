@@ -246,3 +246,26 @@ $string['import_schedule_desc'] = 'رفع جدول التدريب الأسبوع
 $string['import_schedule_explanation'] = 'إمكانية إدخال واستيراد الجداول التدريبية وقوائم البرامج دفعة واحدة بكل سهولة عبر ملفات CSV.';
 $string['import_csv_btn'] = 'استيراد جدول جديد';
 
+$string['nav_group_overview'] = 'لوحة المؤشرات التنفيذية';
+$string['nav_group_analytics'] = 'المتدربون والمتابعة';
+$string['nav_group_tools'] = 'الإدارة والأدوات';
+$string['nav_manage_runs'] = 'إدارة سجلات البرامج';
+$string['nav_import_schedule'] = 'استيراد الجداول التدريبية';
+$string['kpi_active_runs'] = 'البرامج التدريبية';
+$string['kpi_active_runs_sub'] = 'برنامج منفذ ومخطط';
+$string['kpi_total_trainees'] = 'إجمالي المتدربين';
+$string['kpi_total_trainees_sub'] = 'متدرب مسجل بالدورات';
+$string['kpi_training_hours'] = 'ساعات التدريب';
+$string['kpi_training_hours_sub'] = 'ساعة تدريبية فعلية';
+$string['kpi_completion_rate'] = 'نسبة الإنجاز';
+$string['kpi_completion_rate_sub'] = 'معدل إتمام البرامج';
+$string['kpi_avg_grade'] = 'متوسط الدرجات';
+$string['kpi_avg_grade_sub'] = 'من 100 درجة';
+$string['kpi_total_branches'] = 'الفروع والمراكز';
+$string['kpi_total_branches_sub'] = 'موقع ومركز تدريبي';
+$string['kpi_at_risk'] = 'حالات المتابعة والإنذار';
+$string['kpi_at_risk_sub'] = 'تحت الإنذار والمتابعة';
+$string['welcome_title'] = 'مرحباً بك في لوحة التقارير والمؤشرات التنفيذية';
+$string['welcome_subtitle'] = 'منظومة المتابعة التشغيلية والتحليل الإحصائي المتكامل للبرامج التدريبية';
+
+

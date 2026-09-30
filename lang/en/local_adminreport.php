@@ -246,3 +246,26 @@ $string['import_schedule_desc'] = 'Bulk import weekly and annual training schedu
 $string['import_schedule_explanation'] = 'Upload CSV spreadsheets containing schedules, classrooms, timings, and participant counts in bulk.';
 $string['import_csv_btn'] = 'Import Schedule CSV';
 
+$string['nav_group_overview'] = 'Executive Overview';
+$string['nav_group_analytics'] = 'Learners & Tracking';
+$string['nav_group_tools'] = 'Tools & Administration';
+$string['nav_manage_runs'] = 'Course Offerings';
+$string['nav_import_schedule'] = 'Import Schedules';
+$string['kpi_active_runs'] = 'Active Programs';
+$string['kpi_active_runs_sub'] = 'Delivered & planned runs';
+$string['kpi_total_trainees'] = 'Total Trainees';
+$string['kpi_total_trainees_sub'] = 'Enrolled participants';
+$string['kpi_training_hours'] = 'Training Hours';
+$string['kpi_training_hours_sub'] = 'Actual training hours';
+$string['kpi_completion_rate'] = 'Completion Rate';
+$string['kpi_completion_rate_sub'] = 'Average completion';
+$string['kpi_avg_grade'] = 'Average Score';
+$string['kpi_avg_grade_sub'] = 'Out of 100 points';
+$string['kpi_total_branches'] = 'Branches & Centers';
+$string['kpi_total_branches_sub'] = 'Active training sites';
+$string['kpi_at_risk'] = 'Follow-up Alerts';
+$string['kpi_at_risk_sub'] = 'Requires intervention';
+$string['welcome_title'] = 'Welcome to Executive Intelligence Dashboard';
+$string['welcome_subtitle'] = 'Integrated operational monitoring and statistical analytics system';
+
+

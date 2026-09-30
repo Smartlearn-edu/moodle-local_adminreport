@@ -100,8 +100,23 @@ if ($action === 'sync_courses' && confirm_sesskey()) {
     redirect(new moodle_url('/local/adminreport/index.php', ['period' => $period, 'tab' => $tab]));
 }
 
-// 6. Assemble template data.
+// 6. Assemble template data with robust KPI fallbacks.
 $exportparams = ['period' => $period, 'start' => $start, 'end' => $end];
+
+$metrics = (array) $reportdata['metrics'];
+$kpi_runs = !empty($metrics['runs_count']) ? (int) $metrics['runs_count'] : (int) $reportdata['runs_count'];
+$kpi_trainees = !empty($metrics['participations_count'])
+    ? (int) $metrics['participations_count']
+    : (!empty($reportdata['plans_by_entity']['total_trainees'])
+        ? (int) $reportdata['plans_by_entity']['total_trainees']
+        : (int) $reportdata['trainees_count']);
+$kpi_hours = !empty($metrics['total_training_hours']) ? $metrics['total_training_hours'] : '0.00';
+$kpi_completion = !empty($metrics['completion_rate']) ? $metrics['completion_rate'] : 0;
+$kpi_avg_grade = !empty($metrics['avg_grade']) ? $metrics['avg_grade'] : 0;
+$kpi_branches = !empty($reportdata['plans_by_branch']['total_courses'])
+    ? (int) $reportdata['plans_by_branch']['total_courses']
+    : count($reportdata['plans_by_branch']['rows'] ?? []);
+$kpi_at_risk = (int) $totalatrisk;
 
 $templatedata = [
     'config'                   => [
@@ -122,6 +137,13 @@ $templatedata = [
     'is_tab_delivered'         => ($tab === 'delivered'),
     'is_tab_trainees'          => ($tab === 'trainees'),
     'is_tab_management'        => ($tab === 'management'),
+    'kpi_runs'                 => $kpi_runs,
+    'kpi_trainees'             => $kpi_trainees,
+    'kpi_hours'                => $kpi_hours,
+    'kpi_completion'           => $kpi_completion,
+    'kpi_avg_grade'            => $kpi_avg_grade,
+    'kpi_branches'             => $kpi_branches,
+    'kpi_at_risk'              => $kpi_at_risk,
     'metrics'                  => $reportdata['metrics'],
     'ytd_metrics'              => $reportdata['ytd_metrics'],
     'runs'                     => $reportdata['runs'],

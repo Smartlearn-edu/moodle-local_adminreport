@@ -339,7 +339,16 @@ class dimension_manager {
         // Fetch enrolled users in the run.
         $userids = self::get_run_enrolled_userids($run);
         if (empty($userids)) {
-            $fallbackcount = !empty($run->planned_trainees) ? (int) $run->planned_trainees : 0;
+            $fallbackcount = 0;
+            if (!empty($run->id)) {
+                $statcount = $DB->get_field_sql(
+                    "SELECT SUM(participations_flow) FROM {local_adminreport_daily_stats} WHERE run_id = :rid",
+                    ['rid' => $run->id]
+                );
+                if (!empty($statcount)) {
+                    $fallbackcount = (int) $statcount;
+                }
+            }
             return $run->org_dim_id ? [$run->org_dim_id => $fallbackcount] : [];
         }
 

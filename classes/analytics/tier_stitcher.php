@@ -453,18 +453,37 @@ class tier_stitcher {
                 $badgeclass = 'bg-warning text-dark';
             }
 
-            // Estimate/Fetch participant count with planned_trainees fallback for unscheduled cohorts.
-            $participants = $DB->count_records_sql(
-                "SELECT COUNT(DISTINCT ue.userid)
-                   FROM {enrol} e
-                   JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0
-                  WHERE e.courseid = :cid",
-                ['cid' => $r->courseid]
-            );
+            // Calculate active participant count.
+            if ($r->groupid > 0) {
+                $participants = $DB->count_records_sql(
+                    "SELECT COUNT(DISTINCT gm.userid)
+                       FROM {groups_members} gm
+                       JOIN {enrol} e ON e.courseid = :cid
+                       JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0 AND ue.userid = gm.userid
+                       JOIN {user} u ON u.id = gm.userid AND u.deleted = 0
+                      WHERE gm.groupid = :gid",
+                    ['cid' => $r->courseid, 'gid' => $r->groupid]
+                );
+            } else {
+                $participants = $DB->count_records_sql(
+                    "SELECT COUNT(DISTINCT ue.userid)
+                       FROM {enrol} e
+                       JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0
+                       JOIN {user} u ON u.id = ue.userid AND u.deleted = 0
+                      WHERE e.courseid = :cid",
+                    ['cid' => $r->courseid]
+                );
+            }
 
             $traineecount = (int) $participants;
-            if ($traineecount === 0 && !empty($r->planned_trainees)) {
-                $traineecount = (int) $r->planned_trainees;
+            if ($traineecount === 0) {
+                $statcount = $DB->get_field_sql(
+                    "SELECT SUM(participations_flow) FROM {local_adminreport_daily_stats} WHERE run_id = :rid",
+                    ['rid' => $r->id]
+                );
+                if (!empty($statcount)) {
+                    $traineecount = (int) $statcount;
+                }
             }
 
             // Calculate duration in days.
@@ -664,6 +683,34 @@ class tier_stitcher {
     }
 
     /**
+     * Helper to return trainee count subquery joins and column expression for runs queries.
+     *
+     * @return array [string $joins, string $expr]
+     */
+    private static function get_run_trainees_sql_parts(): array {
+        $joins = " LEFT JOIN (
+                       SELECT r_sub.id AS run_id,
+                              COUNT(DISTINCT CASE WHEN r_sub.groupid > 0 THEN gm.userid ELSE ue.userid END) AS trainees_count
+                         FROM {local_adminreport_runs} r_sub
+                         JOIN {enrol} e ON e.courseid = r_sub.courseid
+                         JOIN {user_enrolments} ue ON ue.enrolid = e.id AND ue.status = 0
+                         JOIN {user} u ON u.id = ue.userid AND u.deleted = 0
+                    LEFT JOIN {groups_members} gm ON gm.groupid = r_sub.groupid AND gm.userid = ue.userid
+                        WHERE (r_sub.groupid = 0 OR gm.userid IS NOT NULL)
+                        GROUP BY r_sub.id
+                   ) rt ON rt.run_id = r.id
+                   LEFT JOIN (
+                       SELECT run_id, SUM(participations_flow) AS stat_trainees
+                         FROM {local_adminreport_daily_stats}
+                        GROUP BY run_id
+                   ) ds_part ON ds_part.run_id = r.id ";
+
+        $expr = "SUM(COALESCE(rt.trainees_count, ds_part.stat_trainees, 0))";
+
+        return [$joins, $expr];
+    }
+
+    /**
      * Retrieve plans by entity and program type (Slide 4 Table 2).
      *
      * @param int $start
@@ -707,16 +754,19 @@ class tier_stitcher {
 
         $whereclause = implode(' AND ', $wheres);
 
+        list($traineejoins, $traineeexpr) = self::get_run_trainees_sql_parts();
+
         $sql = "SELECT om.name AS entity_name,
                        tm.name AS program_type,
                        lm.name AS location_name,
                        COUNT(DISTINCT r.id) AS programs_count,
-                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count,
+                       {$traineeexpr} AS trainees_count,
                        COUNT(DISTINCT COALESCE(r.groupid, r.id)) AS groups_count
                   FROM {local_adminreport_runs} r
              LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
              LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
              LEFT JOIN {local_adminreport_dim_members} lm ON lm.id = r.location_dim_id
+                       {$traineejoins}
                  WHERE {$whereclause}
               GROUP BY om.name, tm.name, lm.name
               ORDER BY programs_count DESC, trainees_count DESC";
@@ -798,11 +848,14 @@ class tier_stitcher {
 
         $whereclause = implode(' AND ', $wheres);
 
+        list($traineejoins, $traineeexpr) = self::get_run_trainees_sql_parts();
+
         $sql = "SELECT lm.name AS branch_name,
                        COUNT(DISTINCT r.id) AS courses_count,
-                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                       {$traineeexpr} AS trainees_count
                   FROM {local_adminreport_runs} r
              LEFT JOIN {local_adminreport_dim_members} lm ON lm.id = r.location_dim_id
+                       {$traineejoins}
                  WHERE {$whereclause}
               GROUP BY lm.name
               ORDER BY courses_count DESC, trainees_count DESC";
@@ -852,7 +905,7 @@ class tier_stitcher {
         $params = ['pstart' => $start, 'pend' => $end];
         $wheres = [
             'r.is_cancelled = 0',
-            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.enddate <= :pend',
             'r.startdate <= :pend',
             'r.enddate >= :pstart',
         ];
@@ -868,11 +921,14 @@ class tier_stitcher {
 
         $whereclause = implode(' AND ', $wheres);
 
+        list($traineejoins, $traineeexpr) = self::get_run_trainees_sql_parts();
+
         $sql = "SELECT tm.name AS type_name,
                        COUNT(DISTINCT r.id) AS runs_count,
-                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                       {$traineeexpr} AS trainees_count
                   FROM {local_adminreport_runs} r
              LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
+                       {$traineejoins}
                  WHERE {$whereclause}
               GROUP BY tm.name
               ORDER BY runs_count DESC";
@@ -955,7 +1011,7 @@ class tier_stitcher {
         $params = ['pstart' => $start, 'pend' => $end];
         $wheres = [
             'r.is_cancelled = 0',
-            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.enddate <= :pend',
             'r.startdate <= :pend',
             'r.enddate >= :pstart',
         ];
@@ -971,12 +1027,15 @@ class tier_stitcher {
 
         $whereclause = implode(' AND ', $wheres);
 
+        list($traineejoins, $traineeexpr) = self::get_run_trainees_sql_parts();
+
         $sql = "SELECT COALESCE(sm.name, om.name, 'الشركات') AS sector_name,
                        COUNT(DISTINCT r.id) AS runs_count,
-                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                       {$traineeexpr} AS trainees_count
                   FROM {local_adminreport_runs} r
              LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
              LEFT JOIN {local_adminreport_dim_members} sm ON sm.id = om.parent_id
+                       {$traineejoins}
                  WHERE {$whereclause}
               GROUP BY COALESCE(sm.name, om.name, 'الشركات')
               ORDER BY runs_count DESC";
@@ -1046,7 +1105,7 @@ class tier_stitcher {
         $params = ['pstart' => $start, 'pend' => $end];
         $wheres = [
             'r.is_cancelled = 0',
-            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.enddate <= :pend',
             'r.startdate <= :pend',
             'r.enddate >= :pstart',
         ];
@@ -1062,11 +1121,14 @@ class tier_stitcher {
 
         $whereclause = implode(' AND ', $wheres);
 
+        list($traineejoins, $traineeexpr) = self::get_run_trainees_sql_parts();
+
         $sql = "SELECT om.name AS company_name,
                        COUNT(DISTINCT r.id) AS programs_count,
-                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                       {$traineeexpr} AS trainees_count
                   FROM {local_adminreport_runs} r
              LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
+                       {$traineejoins}
                  WHERE {$whereclause}
               GROUP BY om.name
               ORDER BY programs_count DESC, trainees_count DESC";
@@ -1116,7 +1178,7 @@ class tier_stitcher {
         $params = ['pstart' => $start, 'pend' => $end];
         $wheres = [
             'r.is_cancelled = 0',
-            "(r.status = 'delivered' OR r.enddate <= :pend)",
+            'r.enddate <= :pend',
             'r.startdate <= :pend',
             'r.enddate >= :pstart',
         ];
@@ -1137,12 +1199,15 @@ class tier_stitcher {
 
         $whereclause = implode(' AND ', $wheres);
 
+        list($traineejoins, $traineeexpr) = self::get_run_trainees_sql_parts();
+
         // 1. By Program Type
         $sqltype = "SELECT tm.name AS label,
                            COUNT(DISTINCT r.id) AS runs,
-                           SUM(COALESCE(r.planned_trainees, 0)) AS trainees
+                           {$traineeexpr} AS trainees
                       FROM {local_adminreport_runs} r
                  LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
+                           {$traineejoins}
                      WHERE {$whereclause}
                   GROUP BY tm.name
                   ORDER BY runs DESC";
@@ -1168,10 +1233,11 @@ class tier_stitcher {
         // 2. By Sector
         $sqlsec = "SELECT COALESCE(sm.name, om.name, 'الشركات') AS label,
                           COUNT(DISTINCT r.id) AS runs,
-                          SUM(COALESCE(r.planned_trainees, 0)) AS trainees
+                          {$traineeexpr} AS trainees
                      FROM {local_adminreport_runs} r
                 LEFT JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
                 LEFT JOIN {local_adminreport_dim_members} sm ON sm.id = om.parent_id
+                          {$traineejoins}
                     WHERE {$whereclause}
                  GROUP BY COALESCE(sm.name, om.name, 'الشركات')
                  ORDER BY runs DESC";
@@ -1270,12 +1336,15 @@ class tier_stitcher {
     public static function get_strategic_partners_list(): array {
         global $DB;
 
+        list($traineejoins, $traineeexpr) = self::get_run_trainees_sql_parts();
+
         $sql = "SELECT DISTINCT om.name AS partner_name,
                        COUNT(DISTINCT r.id) AS programs_count,
-                       SUM(COALESCE(r.planned_trainees, 0)) AS trainees_count
+                       {$traineeexpr} AS trainees_count
                   FROM {local_adminreport_runs} r
                   JOIN {local_adminreport_dim_members} om ON om.id = r.org_dim_id
              LEFT JOIN {local_adminreport_dim_members} tm ON tm.id = r.type_dim_id
+                       {$traineejoins}
                  WHERE r.is_cancelled = 0
               GROUP BY om.name
               ORDER BY programs_count DESC";

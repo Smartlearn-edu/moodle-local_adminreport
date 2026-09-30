@@ -27,48 +27,58 @@
         </div>
     </div>
 
-    <!-- Header & Period Switcher Bar -->
-    <div class="adminreport-header-card p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h3 class="mb-1 fw-bold text-dark">{{#str}} pluginname, local_adminreport {{/str}}</h3>
-            <p class="text-muted small mb-0">{{#str}} dashboard_subtitle, local_adminreport {{/str}}</p>
-        </div>
-
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <!-- Period Tabs -->
-            <div class="btn-group period-btn-group" role="group">
-                <a href="{{{period_week_url}}}" class="btn btn-sm {{#is_period_week}}btn-primary active{{/is_period_week}}{{^is_period_week}}btn-outline-primary{{/is_period_week}} period-btn" data-period="week">
-                    {{#str}} period_week, local_adminreport {{/str}}
-                </a>
-                <a href="{{{period_month_url}}}" class="btn btn-sm {{#is_period_month}}btn-primary active{{/is_period_month}}{{^is_period_month}}btn-outline-primary{{/is_period_month}} period-btn" data-period="month">
-                    {{#str}} period_month, local_adminreport {{/str}}
-                </a>
-                <a href="{{{period_annual_url}}}" class="btn btn-sm {{#is_period_annual}}btn-primary active{{/is_period_annual}}{{^is_period_annual}}btn-outline-primary{{/is_period_annual}} period-btn" data-period="annual">
-                    {{#str}} period_annual, local_adminreport {{/str}}
-                </a>
-                <button type="button" class="btn btn-sm {{#is_period_custom}}btn-primary active{{/is_period_custom}}{{^is_period_custom}}btn-outline-primary{{/is_period_custom}} period-btn" data-period="custom" id="btn-custom-period">
-                    {{#str}} period_custom, local_adminreport {{/str}}
-                </button>
+    <!-- Top Welcome Banner & Controls Bar (Kopere Style) -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white kopere-welcome-banner">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="kopere-welcome-avatar rounded-circle d-flex align-items-center justify-content-center text-primary shadow-sm">
+                    <i class="fa fa-dashboard fa-lg" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark">{{#str}} welcome_title, local_adminreport {{/str}}</h4>
+                    <p class="text-muted small mb-0">
+                        {{#str}} welcome_subtitle, local_adminreport {{/str}} &bull; 
+                        <span class="badge bg-light text-primary border px-2 py-1">{{start_date_formatted}} &ndash; {{end_date_formatted}}</span>
+                    </p>
+                </div>
             </div>
 
-            <!-- Print Button -->
-            <button type="button" class="btn btn-sm btn-outline-dark" id="btn-print-dashboard">
-                <i class="fa fa-print me-1" aria-hidden="true"></i>
-                {{#str}} print, local_adminreport {{/str}}
-            </button>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <!-- Period Switcher Buttons -->
+                <div class="btn-group period-btn-group shadow-sm" role="group">
+                    <a href="{{{period_week_url}}}" class="btn btn-sm {{#is_period_week}}btn-primary active{{/is_period_week}}{{^is_period_week}}btn-outline-primary{{/is_period_week}} period-btn" data-period="week">
+                        {{#str}} period_week, local_adminreport {{/str}}
+                    </a>
+                    <a href="{{{period_month_url}}}" class="btn btn-sm {{#is_period_month}}btn-primary active{{/is_period_month}}{{^is_period_month}}btn-outline-primary{{/is_period_month}} period-btn" data-period="month">
+                        {{#str}} period_month, local_adminreport {{/str}}
+                    </a>
+                    <a href="{{{period_annual_url}}}" class="btn btn-sm {{#is_period_annual}}btn-primary active{{/is_period_annual}}{{^is_period_annual}}btn-outline-primary{{/is_period_annual}} period-btn" data-period="annual">
+                        {{#str}} period_annual, local_adminreport {{/str}}
+                    </a>
+                    <button type="button" class="btn btn-sm {{#is_period_custom}}btn-primary active{{/is_period_custom}}{{^is_period_custom}}btn-outline-primary{{/is_period_custom}} period-btn" data-period="custom" id="btn-custom-period">
+                        {{#str}} period_custom, local_adminreport {{/str}}
+                    </button>
+                </div>
 
-            <!-- Runs Management Link -->
-            {{#can_manage}}
-            <a href="{{runs_manage_url}}" class="btn btn-sm btn-outline-secondary">
-                <i class="fa fa-cogs me-1" aria-hidden="true"></i>
-                {{#str}} runs, local_adminreport {{/str}}
-            </a>
-            {{/can_manage}}
+                <!-- Print Action -->
+                <button type="button" class="btn btn-sm btn-outline-dark shadow-sm" id="btn-print-dashboard">
+                    <i class="fa fa-print me-1 ms-1" aria-hidden="true"></i>
+                    {{#str}} print, local_adminreport {{/str}}
+                </button>
+
+                <!-- Course Sync Action -->
+                {{#can_manage}}
+                <a href="{{sync_courses_url}}" class="btn btn-sm btn-outline-success shadow-sm" title="{{#str}} sync_courses_desc, local_adminreport {{/str}}">
+                    <i class="fa fa-refresh me-1 ms-1" aria-hidden="true"></i>
+                    {{#str}} sync_courses_btn, local_adminreport {{/str}}
+                </a>
+                {{/can_manage}}
+            </div>
         </div>
     </div>
 
-    <!-- Custom Date Controls (Hidden by default unless custom period) -->
-    <div class="card p-3 mb-4 bg-light border-0 shadow-sm {{^is_period_custom}}d-none{{/is_period_custom}}" id="custom-date-controls">
+    <!-- Custom Date Controls (Shown when custom period selected) -->
+    <div class="card p-3 mb-4 bg-light border-0 shadow-sm rounded-4 {{^is_period_custom}}d-none{{/is_period_custom}}" id="custom-date-controls">
         <form method="get" action="{{{config.wwwroot}}}/local/adminreport/index.php" class="row g-2 align-items-end">
             <input type="hidden" name="period" value="custom">
             <input type="hidden" name="tab" id="custom-form-tab" value="{{active_tab}}">
@@ -88,32 +98,166 @@
         </form>
     </div>
 
-    <!-- Left-Pane Navigation & Content Layout -->
+    <!-- Main Two-Column Layout (Sidebar + Content Area) -->
     <div class="row g-3">
-        <!-- Left Pane Navigation (Sidebar) -->
+        <!-- Persistent Grouped Left Sidebar (Kopere Style) -->
         <div class="col-12 col-lg-3 col-xl-2 mb-3">
-            <div class="nav flex-column nav-pills executive-left-nav shadow-sm bg-white p-2 rounded" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button class="nav-link {{#is_tab_plans}}active{{/is_tab_plans}} text-start py-3 px-3 mb-2" id="v-pills-plans-tab" data-tab-name="plans" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-plans" data-target="#v-pills-plans" type="button" role="tab" aria-controls="v-pills-plans" aria-selected="{{#is_tab_plans}}true{{/is_tab_plans}}{{^is_tab_plans}}false{{/is_tab_plans}}">
-                    <i class="fa fa-calendar-check-o me-2" aria-hidden="true"></i>
-                    {{#str}} nav_weekly_plans, local_adminreport {{/str}}
-                </button>
-                <button class="nav-link {{#is_tab_delivered}}active{{/is_tab_delivered}} text-start py-3 px-3 mb-2" id="v-pills-delivered-tab" data-tab-name="delivered" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-delivered" data-target="#v-pills-delivered" type="button" role="tab" aria-controls="v-pills-delivered" aria-selected="{{#is_tab_delivered}}true{{/is_tab_delivered}}{{^is_tab_delivered}}false{{/is_tab_delivered}}">
-                    <i class="fa fa-graduation-cap me-2" aria-hidden="true"></i>
-                    {{#str}} nav_delivered_programs, local_adminreport {{/str}}
-                </button>
-                <button class="nav-link {{#is_tab_trainees}}active{{/is_tab_trainees}} text-start py-3 px-3 mb-2" id="v-pills-trainees-tab" data-tab-name="trainees" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-trainees" data-target="#v-pills-trainees" type="button" role="tab" aria-controls="v-pills-trainees" aria-selected="{{#is_tab_trainees}}true{{/is_tab_trainees}}{{^is_tab_trainees}}false{{/is_tab_trainees}}">
-                    <i class="fa fa-users me-2" aria-hidden="true"></i>
-                    {{#str}} nav_trainees_reports, local_adminreport {{/str}}
-                </button>
-                <button class="nav-link {{#is_tab_management}}active{{/is_tab_management}} text-start py-3 px-3" id="v-pills-management-tab" data-tab-name="management" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-management" data-target="#v-pills-management" type="button" role="tab" aria-controls="v-pills-management" aria-selected="{{#is_tab_management}}true{{/is_tab_management}}{{^is_tab_management}}false{{/is_tab_management}}">
-                    <i class="fa fa-cogs me-2" aria-hidden="true"></i>
-                    {{#str}} nav_management, local_adminreport {{/str}}
-                </button>
+            <div class="card border-0 shadow-sm rounded-4 p-2 bg-white kopere-sidebar-nav">
+                <!-- Sidebar Brand Header -->
+                <div class="kopere-sidebar-brand d-flex align-items-center gap-2 px-2 py-2 mb-2 border-bottom">
+                    <div class="kopere-brand-icon rounded-3 d-flex align-items-center justify-content-center text-white">
+                        <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark fs-6 line-height-1">{{#str}} pluginname, local_adminreport {{/str}}</div>
+                        <span class="text-muted small" style="font-size: 0.72rem;">Management BI</span>
+                    </div>
+                </div>
+
+                <!-- Nav Group 1: Executive Overview -->
+                <div class="kopere-sidebar-group-title text-uppercase fw-bold text-muted px-2 mt-2 mb-1">
+                    {{#str}} nav_group_overview, local_adminreport {{/str}}
+                </div>
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link {{#is_tab_plans}}active{{/is_tab_plans}} text-start py-2 px-3 mb-1" id="v-pills-plans-tab" data-tab-name="plans" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-plans" data-target="#v-pills-plans" type="button" role="tab" aria-controls="v-pills-plans" aria-selected="{{#is_tab_plans}}true{{/is_tab_plans}}{{^is_tab_plans}}false{{/is_tab_plans}}">
+                        <i class="fa fa-calendar-check-o me-2 ms-1" aria-hidden="true"></i>
+                        {{#str}} nav_weekly_plans, local_adminreport {{/str}}
+                    </button>
+                    <button class="nav-link {{#is_tab_delivered}}active{{/is_tab_delivered}} text-start py-2 px-3 mb-1" id="v-pills-delivered-tab" data-tab-name="delivered" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-delivered" data-target="#v-pills-delivered" type="button" role="tab" aria-controls="v-pills-delivered" aria-selected="{{#is_tab_delivered}}true{{/is_tab_delivered}}{{^is_tab_delivered}}false{{/is_tab_delivered}}">
+                        <i class="fa fa-graduation-cap me-2 ms-1" aria-hidden="true"></i>
+                        {{#str}} nav_delivered_programs, local_adminreport {{/str}}
+                    </button>
+
+                    <!-- Nav Group 2: Analytics & Trainees -->
+                    <div class="kopere-sidebar-group-title text-uppercase fw-bold text-muted px-2 mt-3 mb-1">
+                        {{#str}} nav_group_analytics, local_adminreport {{/str}}
+                    </div>
+                    <button class="nav-link {{#is_tab_trainees}}active{{/is_tab_trainees}} text-start py-2 px-3 mb-1" id="v-pills-trainees-tab" data-tab-name="trainees" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-trainees" data-target="#v-pills-trainees" type="button" role="tab" aria-controls="v-pills-trainees" aria-selected="{{#is_tab_trainees}}true{{/is_tab_trainees}}{{^is_tab_trainees}}false{{/is_tab_trainees}}">
+                        <i class="fa fa-users me-2 ms-1" aria-hidden="true"></i>
+                        {{#str}} nav_trainees_reports, local_adminreport {{/str}}
+                    </button>
+
+                    <!-- Nav Group 3: Tools & Administration -->
+                    <div class="kopere-sidebar-group-title text-uppercase fw-bold text-muted px-2 mt-3 mb-1">
+                        {{#str}} nav_group_tools, local_adminreport {{/str}}
+                    </div>
+                    <button class="nav-link {{#is_tab_management}}active{{/is_tab_management}} text-start py-2 px-3 mb-1" id="v-pills-management-tab" data-tab-name="management" data-bs-toggle="pill" data-toggle="pill" data-bs-target="#v-pills-management" data-target="#v-pills-management" type="button" role="tab" aria-controls="v-pills-management" aria-selected="{{#is_tab_management}}true{{/is_tab_management}}{{^is_tab_management}}false{{/is_tab_management}}">
+                        <i class="fa fa-cogs me-2 ms-1" aria-hidden="true"></i>
+                        {{#str}} nav_management, local_adminreport {{/str}}
+                    </button>
+
+                    {{#can_manage}}
+                    <div class="border-top pt-2 mt-2">
+                        <a href="{{runs_manage_url}}" class="nav-link text-start py-2 px-3 mb-1 text-muted fs-7">
+                            <i class="fa fa-sliders me-2 ms-1 text-secondary" aria-hidden="true"></i>
+                            {{#str}} nav_manage_runs, local_adminreport {{/str}}
+                        </a>
+                        <a href="{{import_url}}" class="nav-link text-start py-2 px-3 text-muted fs-7">
+                            <i class="fa fa-cloud-upload me-2 ms-1 text-secondary" aria-hidden="true"></i>
+                            {{#str}} nav_import_schedule, local_adminreport {{/str}}
+                        </a>
+                    </div>
+                    {{/can_manage}}
+                </div>
             </div>
         </div>
 
         <!-- Main Content Area -->
         <div class="col-12 col-lg-9 col-xl-10">
+            <!-- 7 Vibrant KPI Cards Row (Circled in Red in Kopere Dashboard) -->
+            <div class="row g-3 mb-4 kopere-kpi-grid">
+                <!-- Card 1: Active Programs (Purple) -->
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="kopere-kpi-card kopere-bg-purple text-white p-3 rounded-4 shadow-sm position-relative overflow-hidden h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="kopere-kpi-title small text-white-50 fw-semibold">{{#str}} kpi_active_runs, local_adminreport {{/str}}</span>
+                            <i class="fa fa-calendar-check-o text-white-50" aria-hidden="true"></i>
+                        </div>
+                        <div class="kopere-kpi-value fs-2 fw-bold mb-1">{{kpi_runs}}</div>
+                        <div class="kopere-kpi-desc text-white-50 small">{{#str}} kpi_active_runs_sub, local_adminreport {{/str}}</div>
+                        <div class="kopere-kpi-watermark"><i class="fa fa-calendar-check-o" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Total Trainees (Amber) -->
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="kopere-kpi-card kopere-bg-amber text-white p-3 rounded-4 shadow-sm position-relative overflow-hidden h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="kopere-kpi-title small text-white-50 fw-semibold">{{#str}} kpi_total_trainees, local_adminreport {{/str}}</span>
+                            <i class="fa fa-users text-white-50" aria-hidden="true"></i>
+                        </div>
+                        <div class="kopere-kpi-value fs-2 fw-bold mb-1">{{kpi_trainees}}</div>
+                        <div class="kopere-kpi-desc text-white-50 small">{{#str}} kpi_total_trainees_sub, local_adminreport {{/str}}</div>
+                        <div class="kopere-kpi-watermark"><i class="fa fa-users" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Training Hours (Emerald) -->
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="kopere-kpi-card kopere-bg-emerald text-white p-3 rounded-4 shadow-sm position-relative overflow-hidden h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="kopere-kpi-title small text-white-50 fw-semibold">{{#str}} kpi_training_hours, local_adminreport {{/str}}</span>
+                            <i class="fa fa-clock-o text-white-50" aria-hidden="true"></i>
+                        </div>
+                        <div class="kopere-kpi-value fs-2 fw-bold mb-1">{{kpi_hours}}</div>
+                        <div class="kopere-kpi-desc text-white-50 small">{{#str}} kpi_training_hours_sub, local_adminreport {{/str}}</div>
+                        <div class="kopere-kpi-watermark"><i class="fa fa-clock-o" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Completion Rate (Sky Blue) -->
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="kopere-kpi-card kopere-bg-sky text-white p-3 rounded-4 shadow-sm position-relative overflow-hidden h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="kopere-kpi-title small text-white-50 fw-semibold">{{#str}} kpi_completion_rate, local_adminreport {{/str}}</span>
+                            <i class="fa fa-check-circle-o text-white-50" aria-hidden="true"></i>
+                        </div>
+                        <div class="kopere-kpi-value fs-2 fw-bold mb-1">{{kpi_completion}}%</div>
+                        <div class="kopere-kpi-desc text-white-50 small">{{#str}} kpi_completion_rate_sub, local_adminreport {{/str}}</div>
+                        <div class="kopere-kpi-watermark"><i class="fa fa-check-circle-o" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Average Score (Violet) -->
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="kopere-kpi-card kopere-bg-violet text-white p-3 rounded-4 shadow-sm position-relative overflow-hidden h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="kopere-kpi-title small text-white-50 fw-semibold">{{#str}} kpi_avg_grade, local_adminreport {{/str}}</span>
+                            <i class="fa fa-star text-white-50" aria-hidden="true"></i>
+                        </div>
+                        <div class="kopere-kpi-value fs-2 fw-bold mb-1">{{kpi_avg_grade}}</div>
+                        <div class="kopere-kpi-desc text-white-50 small">{{#str}} kpi_avg_grade_sub, local_adminreport {{/str}}</div>
+                        <div class="kopere-kpi-watermark"><i class="fa fa-star" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Branches (Teal) -->
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="kopere-kpi-card kopere-bg-teal text-white p-3 rounded-4 shadow-sm position-relative overflow-hidden h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="kopere-kpi-title small text-white-50 fw-semibold">{{#str}} kpi_total_branches, local_adminreport {{/str}}</span>
+                            <i class="fa fa-building-o text-white-50" aria-hidden="true"></i>
+                        </div>
+                        <div class="kopere-kpi-value fs-2 fw-bold mb-1">{{kpi_branches}}</div>
+                        <div class="kopere-kpi-desc text-white-50 small">{{#str}} kpi_total_branches_sub, local_adminreport {{/str}}</div>
+                        <div class="kopere-kpi-watermark"><i class="fa fa-building-o" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+
+                <!-- Card 7: At-Risk Follow-up (Slate) -->
+                <div class="col-6 col-md-4 col-xl">
+                    <div class="kopere-kpi-card kopere-bg-slate text-white p-3 rounded-4 shadow-sm position-relative overflow-hidden h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="kopere-kpi-title small text-white-50 fw-semibold">{{#str}} kpi_at_risk, local_adminreport {{/str}}</span>
+                            <i class="fa fa-exclamation-triangle text-white-50" aria-hidden="true"></i>
+                        </div>
+                        <div class="kopere-kpi-value fs-2 fw-bold mb-1">{{kpi_at_risk}}</div>
+                        <div class="kopere-kpi-desc text-white-50 small">{{#str}} kpi_at_risk_sub, local_adminreport {{/str}}</div>
+                        <div class="kopere-kpi-watermark"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="tab-content" id="v-pills-tabContent">
                 <!-- Pane 1: Weekly Plans (Slides 2, 3, 4) -->
                 <div class="tab-pane fade {{#is_tab_plans}}show active{{/is_tab_plans}}" id="v-pills-plans" role="tabpanel" aria-labelledby="v-pills-plans-tab" tabindex="0">

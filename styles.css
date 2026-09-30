@@ -164,6 +164,144 @@
     border-inline-start: 4px solid #0284c7;
 }
 
+/* -------------------------------------------------------------
+   Kopere-Inspired Dashboard Theme & Vibrant KPI Cards
+   ------------------------------------------------------------- */
+.kopere-welcome-banner {
+    border: 1px solid #edf2f7;
+    background: #ffffff;
+}
+
+.kopere-welcome-avatar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    color: #0284c7;
+    font-size: 1.25rem;
+}
+
+.kopere-sidebar-nav {
+    border: 1px solid #edf2f7;
+}
+
+.kopere-sidebar-brand {
+    padding-bottom: 0.75rem;
+}
+
+.kopere-brand-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    font-size: 1.1rem;
+    box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3);
+}
+
+.kopere-sidebar-group-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.6px;
+    color: #94a3b8;
+}
+
+.kopere-sidebar-nav .nav-link {
+    border-radius: 0.5rem;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: all 0.2s ease-in-out;
+    border-inline-start: 3px solid transparent;
+}
+
+.kopere-sidebar-nav .nav-link:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.kopere-sidebar-nav .nav-link.active {
+    background-color: #e0f2fe;
+    color: #0284c7 !important;
+    border-inline-start: 3px solid #0284c7;
+    font-weight: 700;
+}
+
+.kopere-sidebar-nav .nav-link.active i {
+    color: #0284c7 !important;
+}
+
+/* Vibrant Colorful KPI Cards (Circled in Kopere Screenshot) */
+.kopere-kpi-card {
+    border: none;
+    min-height: 112px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: default;
+}
+
+.kopere-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.15) !important;
+}
+
+.kopere-kpi-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.kopere-kpi-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+}
+
+.kopere-kpi-desc {
+    font-size: 0.75rem;
+    opacity: 0.88;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kopere-kpi-watermark {
+    position: absolute;
+    bottom: -8px;
+    inset-inline-end: -8px;
+    font-size: 3.8rem;
+    opacity: 0.13;
+    pointer-events: none;
+    line-height: 1;
+}
+
+/* Vibrant Palette Gradients */
+.kopere-bg-purple {
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important;
+}
+
+.kopere-bg-amber {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+}
+
+.kopere-bg-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+}
+
+.kopere-bg-sky {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+}
+
+.kopere-bg-violet {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+}
+
+.kopere-bg-teal {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
+}
+
+.kopere-bg-slate {
+    background: linear-gradient(135deg, #475569 0%, #1e293b 100%) !important;
+}
+
 .definition-callout-card {
     background-color: #f8fafc;
     border-inline-start: 4px solid #3b82f6 !important;
@@ -205,6 +343,8 @@
     .breadcrumb,
     #page-footer,
     .executive-left-nav,
+    .kopere-sidebar-nav,
+    .kopere-kpi-watermark,
     #schedule-search-input,
     #trainees-search-input,
     .input-group,
